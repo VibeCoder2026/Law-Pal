@@ -1,0 +1,28 @@
+PDF_PATH: C:\Users\keoma\constitution-reader\law_sources\constitution.pdf
+OUT_PATH: C:\Users\keoma\constitution-reader\src\assets\constitution.json
+
+TOC headings found: 284
+Output sections: 293
+Duplicate chunk_id: 0
+Empty text sections: 0
+
+Numeric min/max: 1..232
+Numeric gaps: 4
+  Examples: [(109, 111), (121, 123), (134, 136), (173, 177)]
+
+Shortest sections preview:
+  sec-131 (131): len=28 'provided for in article 197.'
+  sec-6A (6A): len=31 'set out in the Second Schedule.'
+  sec-108 (108): len=41 'the circumstances set out in article 183.'
+  sec-231 (231): len=45 '[Article 231 repealed  by Act No. 17 of 2000]'
+  sec-212A (212A): len=46 'There shall be an Ethnic Relations Commission.'
+  sec-38D (38D): len=70 'accommodation from his or her parents and guardians. of fifteen years.'
+  sec-38F (38F): len=70 '[See previous section text; extraction produced fragment: 'vilified.']'
+  sec-38C (38C): len=83 'child takes place only if that adoption would be in the best interest of the child.'
+  sec-132 (132): len=84 'or her office unless he or she has taken and subscribed the oath of office.  APPEALS'
+  sec-149A (149A): len=84 'of his or her right to work, that is to say, the right to free choice of employment.'
+  sec-149I (149I): len=85 'the right to establish a private school which shall be under regulation by the State.'
+  sec-38E (38E): len=88 '[See previous section text; extraction produced fragment: 'of fifteen years.'] vilified.'
+  sec-149G (149G): len=96 'protection, preservation and promulgation of their languages, cultural heritage and way of life.'
+  sec-114 (114): len=99 'shall, before entering upon the duties of his or her office, make and subscribe the oath of office.'
+  sec-121 (121): len=105 'President and shall be exercised by him or her in accordance with the provisions of articles 188, 189 and'

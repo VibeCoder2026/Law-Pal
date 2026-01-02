@@ -1,0 +1,309 @@
+{
+  "parts": [
+    {
+      "id": "part-1",
+      "partNumber": "1",
+      "title": "General Principles",
+      "description": "Fundamental principles of the state, rights, and governance",
+      "chapters": [
+        "ch-1-1",
+        "ch-1-2",
+        "ch-1-3",
+        "ch-1-4",
+        "ch-1-5",
+        "ch-1-6",
+        "ch-1-7",
+        "ch-1-9",
+        "ch-1-10",
+        "ch-1-11",
+        "ch-1-12"
+      ]
+    },
+    {
+      "id": "part-2",
+      "partNumber": "2",
+      "title": "Specific Rules",
+      "description": "Detailed rules governing institutions and procedures",
+      "titles": [
+        "title-1",
+        "title-1a",
+        "title-2",
+        "title-4",
+        "title-5",
+        "title-6",
+        "title-6a",
+        "title-7",
+        "title-8",
+        "title-9",
+        "title-10"
+      ]
+    }
+  ],
+  "chapters": [
+    {
+      "id": "ch-1-1",
+      "chapterNumber": "I",
+      "partId": "part-1",
+      "title": "The State and the Constitution",
+      "articleStart": 1,
+      "articleEnd": 8
+    },
+    {
+      "id": "ch-1-2",
+      "chapterNumber": "II",
+      "partId": "part-1",
+      "title": "Principles and Bases of the Political, Economic and Social System",
+      "articleStart": 9,
+      "articleEnd": 40
+    },
+    {
+      "id": "ch-1-3",
+      "chapterNumber": "III",
+      "partId": "part-1",
+      "title": "Fundamental Rights and Freedoms of the Individual",
+      "articleStart": 40,
+      "articleEnd": 40
+    },
+    {
+      "id": "ch-1-4",
+      "chapterNumber": "IV",
+      "partId": "part-1",
+      "title": "Citizenship",
+      "articleStart": 41,
+      "articleEnd": 49
+    },
+    {
+      "id": "ch-1-5",
+      "chapterNumber": "V",
+      "partId": "part-1",
+      "title": "Supreme Organs of Democratic Power",
+      "articleStart": 50,
+      "articleEnd": 50
+    },
+    {
+      "id": "ch-1-6",
+      "chapterNumber": "VI",
+      "partId": "part-1",
+      "title": "Parliament",
+      "articleStart": 51,
+      "articleEnd": 70
+    },
+    {
+      "id": "ch-1-7",
+      "chapterNumber": "VII",
+      "partId": "part-1",
+      "title": "Local Democracy",
+      "articleStart": 71,
+      "articleEnd": 81
+    },
+    {
+      "id": "ch-1-9",
+      "chapterNumber": "IX",
+      "partId": "part-1",
+      "title": "The President",
+      "articleStart": 89,
+      "articleEnd": 98
+    },
+    {
+      "id": "ch-1-10",
+      "chapterNumber": "X",
+      "partId": "part-1",
+      "title": "The Executive",
+      "articleStart": 99,
+      "articleEnd": 122
+    },
+    {
+      "id": "ch-1-11",
+      "chapterNumber": "XI",
+      "partId": "part-1",
+      "title": "The Judicature",
+      "articleStart": 122,
+      "articleEnd": 133
+    },
+    {
+      "id": "ch-1-12",
+      "chapterNumber": "XII",
+      "partId": "part-1",
+      "title": "The Service Commissions",
+      "articleStart": 134,
+      "articleEnd": 137
+    },
+    {
+      "id": "ch-title7-1",
+      "chapterNumber": "1",
+      "titleId": "title-7",
+      "title": "Judicial Service Commission",
+      "articleStart": 198,
+      "articleEnd": 199
+    },
+    {
+      "id": "ch-title7-2",
+      "chapterNumber": "2",
+      "titleId": "title-7",
+      "title": "Public Service Commission",
+      "articleStart": 200,
+      "articleEnd": 206
+    },
+    {
+      "id": "ch-title7-3",
+      "chapterNumber": "3",
+      "titleId": "title-7",
+      "title": "Teaching Service Commission",
+      "articleStart": 207,
+      "articleEnd": 209
+    },
+    {
+      "id": "ch-title7-4",
+      "chapterNumber": "4",
+      "titleId": "title-7",
+      "title": "Police Service Commission",
+      "articleStart": 209,
+      "articleEnd": 212
+    },
+    {
+      "id": "ch-title7-5",
+      "chapterNumber": "5",
+      "titleId": "title-7",
+      "title": "Ethnic Relations Commission",
+      "articleStart": 212,
+      "articleEnd": 212
+    },
+    {
+      "id": "ch-title7-6",
+      "chapterNumber": "6",
+      "titleId": "title-7",
+      "title": "Rights Commissions",
+      "articleStart": 212,
+      "articleEnd": 212
+    },
+    {
+      "id": "ch-title7-7",
+      "chapterNumber": "7",
+      "titleId": "title-7",
+      "title": "Pension and General Provisions",
+      "articleStart": 213,
+      "articleEnd": 215
+    }
+  ],
+  "titles": [
+    {
+      "id": "title-1",
+      "titleNumber": "1",
+      "partId": "part-2",
+      "title": "Protection of Fundamental Rights and Freedoms of the Individual",
+      "articleStart": 138,
+      "articleEnd": 154
+    },
+    {
+      "id": "title-1a",
+      "titleNumber": "1A",
+      "partId": "part-2",
+      "title": "Protection of Human Rights",
+      "articleStart": 154,
+      "articleEnd": 154
+    },
+    {
+      "id": "title-2",
+      "titleNumber": "2",
+      "partId": "part-2",
+      "title": "Parliament",
+      "articleStart": 155,
+      "articleEnd": 172
+    },
+    {
+      "id": "title-4",
+      "titleNumber": "4",
+      "partId": "part-2",
+      "title": "The President",
+      "articleStart": 177,
+      "articleEnd": 182
+    },
+    {
+      "id": "title-5",
+      "titleNumber": "5",
+      "partId": "part-2",
+      "title": "The Executive",
+      "articleStart": 183,
+      "articleEnd": 196,
+      "subtitles": [
+        "subtitle-5-1",
+        "subtitle-5-2"
+      ]
+    },
+    {
+      "id": "title-6",
+      "titleNumber": "6",
+      "partId": "part-2",
+      "title": "The Judicature",
+      "articleStart": 197,
+      "articleEnd": 197
+    },
+    {
+      "id": "title-6a",
+      "titleNumber": "6A",
+      "partId": "part-2",
+      "title": "Defence and Security",
+      "articleStart": 197,
+      "articleEnd": 197
+    },
+    {
+      "id": "title-7",
+      "titleNumber": "7",
+      "partId": "part-2",
+      "title": "The Service Commissions",
+      "articleStart": 198,
+      "articleEnd": 215,
+      "chapters": [
+        "ch-title7-1",
+        "ch-title7-2",
+        "ch-title7-3",
+        "ch-title7-4",
+        "ch-title7-5",
+        "ch-title7-6",
+        "ch-title7-7"
+      ]
+    },
+    {
+      "id": "title-8",
+      "titleNumber": "8",
+      "partId": "part-2",
+      "title": "Finance",
+      "articleStart": 216,
+      "articleEnd": 223
+    },
+    {
+      "id": "title-9",
+      "titleNumber": "9",
+      "partId": "part-2",
+      "title": "Miscellaneous",
+      "articleStart": 224,
+      "articleEnd": 227
+    },
+    {
+      "id": "title-10",
+      "titleNumber": "10",
+      "partId": "part-2",
+      "title": "Interpretation",
+      "articleStart": 228,
+      "articleEnd": 232
+    }
+  ],
+  "subtitles": [
+    {
+      "id": "subtitle-5-1",
+      "subtitleNumber": "1",
+      "titleId": "title-5",
+      "title": "Ministers, etc.",
+      "articleStart": 183,
+      "articleEnd": 190
+    },
+    {
+      "id": "subtitle-5-2",
+      "subtitleNumber": "2",
+      "titleId": "title-5",
+      "title": "The Ombudsman",
+      "articleStart": 191,
+      "articleEnd": 196
+    }
+  ]
+}

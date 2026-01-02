@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "constitution-reader",
-    "slug": "constitution-reader",
+    "name": "Law Pal GY",
+    "slug": "guyana-laws",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,10 +21,24 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.lawpalgy.app"
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
+    "platforms": ["android", "ios"],
+    "plugins": [
+      "expo-dev-client",
+      "expo-sqlite",
+      "expo-asset",
+      "./plugins/withLawSourcesAssets"
+    ],
+    "assetBundlePatterns": [
+      "assets/**",
+      "law_sources/**"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "90faa7f5-13df-49d9-933c-aff892eda35c"
+      }
     }
   }
 }

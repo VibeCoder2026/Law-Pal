@@ -1,0 +1,13 @@
+# Exclude large/unnecessary files from EAS builds
+node_modules/.cache
+.expo
+.git
+*.log
+
+# Exclude PDFs from android/assets since the plugin copies them during build
+# This prevents uploading 761MB of PDFs twice (once in law_sources, once in android/assets)
+android/app/src/main/assets/law_sources/
+
+# Also exclude the entire android build folder - EAS generates it fresh
+android/app/build/
+android/.gradle/

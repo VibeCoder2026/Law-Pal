@@ -1,0 +1,361 @@
+=== PARTS ===
+
+Line 1339: PART 1
+  +1: GENERAL PRINCIPLES
+  +3: CHAPTER I
+
+Line 1986: PART 2
+  +2: SPECIFIC  RULES
+
+Line 2853: PART 1
+  +1: GENERAL PRINCIPLES
+  +3: CHAPTER I
+
+Line 7420: PART 2
+  +1: SPECIFIC RULES
+  +3: TITLE 1
+
+Line 33339: PART I
+  +1: PRELIMINARY
+  +2: 1.    Short title.
+  +3: 2. Interpretation.
+
+Line 33345: PART II
+  +1: APPOINTMENTS
+  +3: 4. Tenure of office.
+
+Line 33352: PART III
+  +1: CONDUCT OF MEMBERS OF THE JUDICIAL
+  +2: SERVICE
+
+Line 33390: PART IV
+  +1: LEAVE OF ABSENCE
+  +3: 24. Officers entitled to leave as of right.
+
+Line 33429: PART V
+  +1: TRAINING AND CAREER DEVELOPMENT
+  +3: 45. Training policy for the Judicial Service.
+
+Line 33451: PART VI
+  +1: SALARIES, ALLOWANCE AND FINANCIAL
+  +2: BENEFITS
+
+Line 33457: PART VII
+  +1: PENSIONS, GRATUITIES AND OTHER
+  +2: RETIREMENT BENEFITS
+
+Line 33481: PART VIII
+  +1: DISCIPLINE OF PUBLIC OFFICERS
+  +3: 67. Authority to discipline officers.
+
+Line 33522: PART IX
+  +1: MISCELLANEOUS
+  +3: Correspondence Between Departments
+
+Line 33556: PART I
+  +1: PRELIMINARY
+  +3: 1. These Rules may be  cited  as  the Judicial  Service
+
+Line 33670: PART II
+  +1: APPOINTMENTS
+  +3: 4. (1)  Subject  to  the  Constitution  and  to  sub-rule  (2),
+
+Line 33759: PART III
+  +1: CONDUCT OF MEMBERS OF THE JUDICIAL
+  +2: SERVICE
+
+Line 34489: PART IV
+  +1: LEAVE OF ABSENCE
+  +3: 25. Subject  to  the  exigencies of  the  Judicial  Service
+
+Line 35106: PART V
+  +1: TRAINING AND CAREER DEVELOPMENT
+  +3: 46. The general  direction  of  training policy for  the
+
+Line 35711: PART VI
+  +1: SALARIES ALLOWANCES AND FINANCIAL
+  +2: BENEFITS
+
+Line 35720: PART VII
+  +1: PENSIONS, GRATUITIES AND OTHER
+  +2: RETIREMENT
+
+Line 35812: PART VIII
+  +1: DISCIPLINE OF PUBLIC OFFICERS
+  +3: 68. (1)   Subject to   the Constitution,   the power to
+
+Line 36502: PART IX
+  +1: MISCELLANEOUS
+  +3: 85. Official  seals  and  stamps  shall  be  kept  secured
+
+
+=== TITLES ===
+
+Line 1990: TITLE 1
+  +1: PROTECTION OF FUNDAMENTAL RIGHTS AND
+  +2: FREEDOMS OF THE INDIVIDUAL
+
+Line 2081: TITLE 1A
+  +1: PROTECTION OF HUMAN  RIGHTS
+  +3: 154A.   Human rights of the individual.
+
+Line 2086: TITLE 2
+  +1: PARLIAMENT
+  +3: 155. Disqualifications for election as members.
+
+Line 2174: TITLE  3
+  +1: 173-176  [Title 3  Articles 173-176 repealed by Act No. 14 of
+  +2: 2000]
+
+Line 2178: TITLE 4
+  +1: THE PRESIDENT
+  +3: 177. Election of President.
+
+Line 2189: TITLE 5
+  +1: THE EXECUTIVE
+  +3: SUBTITLE 1
+
+Line 2272: TITLE 6
+  +1: THE  JUDICATURE
+  +3: 197. Tenure of office of Judges.
+
+Line 2277: TITLE 6A
+  +1: DEFENCE AND  SECURITY
+  +3: 197A.  Defence and security.
+
+Line 2282: TITLE 7
+  +1: THE SERVICE COMMISSIONS
+  +3: THE JUDICIAL SERVICE COMMISSION
+
+Line 2564: TITLE 8
+  +1: FINANCE
+  +3: 216.       Establishment of Consolidated Fund.
+
+Line 2636: TITLE 9
+  +1: MISCELLANEOUS
+  +3: 224.      Rules of court.
+
+Line 2645: TITLE 10
+  +1: INTERPRETATION
+  +3: 228. Appointments.
+
+Line 7423: TITLE 1
+  +1: PROTECTION OF FUNDAMENTAL RIGHTS AND
+  +2: FREEDOMS OF THE INDIVIDUAL
+
+Line 8304: title or  interest held  by any
+  +1: person  in  or  over  any lands
+  +2: situate in an Amerindian
+  +3: District, Area or Village
+
+Line 11101: TITLE 1 A
+  +1: PROTECTION OF HUMAN RIGHTS
+  +3: 154A.(1) Subject   to   paragraphs (3)   and   (6),   every
+
+Line 11206: TITLE 2
+  +1: PARLIAMENT
+  +3: 155. (1) No person shall be qualified for election as a
+
+Line 14160: TITLE 4
+  +1: THE PRESIDENT
+  +2: 177. (1) Any  list  of  candidates for  an  election  held
+  +3: pursuant  to  the  provisions  of  article  60(2)  shall  designate
+
+Line 14958: TITLE 5
+  +1: THE EXECUTIVE
+  +3: SUBTITLE 1
+
+Line 16499: TITLE 6
+  +1: THE JUDICATURE
+  +2: 197. (1)  Notwithstanding  the  provisions  of  articles
+  +3: 124  and  125,  the  office  of  a  Justice  of  Appeal  or  a Puisne
+
+Line 16893: TITLE 6A
+  +1: DEFENCE AND SECURITY
+  +2: 197A.   (1) The State’s defence and security policy
+  +3: shall  be  to  defend national  independence,  preserve  the
+
+Line 17097: TITLE 7
+  +1: THE SERVICE COMMISSIONS
+  +2: THE JUDICIAL SERVICE COMMISSION
+  +3: 198. (1)   The members of   the Judicial   Service
+
+Line 23208: TITLE 8
+  +1: FINANCE
+  +2: 216. All revenues or other moneys raised or received
+  +3: by  Guyana  (not  being  revenues or  other  moneys  that  are
+
+Line 23872: TITLE 9
+  +1: MISCELLANEOUS
+  +2: 224. Where  under  this  Constitution  any  provision
+  +3: may be  made  by rules of court, rules for the purpose may
+
+Line 24335: TITLE 10
+  +1: INTERPRETATION
+  +2: 228. (1) Where  any person  has  vacated  any  office
+  +3: established   by   this Constitution   (including any office
+
+
+=== CHAPTERS ===
+
+Line 10: CHAPTER 1:01
+  +3: Act
+
+Line 143: CHAPTER 1:01
+  +2: CONSTITUTION
+
+Line 192: CHAPTER 1:01
+  +1: Commission,  the Police  Service  Commission,    the
+  +2: ‚service    commission‛  means    the  Public    Service
+
+Line 1342: CHAPTER I
+  +1: THE STATE AND THE CONSTITUTION
+
+Line 1358: CHAPTER II
+  +1: PRINCIPLES AND BASES OF THE POLITICAL,
+  +2: ECONOMIC AND SOCIAL SYSTEM
+
+Line 1519: CHAPTER III
+  +1: FUNDAMENTAL RIGHTS AND FREEDOMS OF THE
+  +2: INDIVIDUAL
+
+Line 1526: CHAPTER  IV
+  +1: CITIZENSHIP
+  +3: 41.      Persons  who   continue  to be citizens on
+
+Line 1543: CHAPTER V
+  +1: SUPREME ORGANS OF DEMOCRATIC POWER
+  +3: 50. Supreme organs of democratic power.
+
+Line 1605: CHAPTER VI
+  +1: PARLIAMENT
+  +3: COMPOSITION  OF  PARLIAMENT
+
+Line 1700: CHAPTER VII
+  +1: LOCAL DEMOCRACY
+  +3: LOCAL DEMOCRATIC  ORGANS
+
+Line 1724: CHAPTER IX
+  +1: THE PRESIDENT
+  +3: 89. Establishment of Office of President.
+
+Line 1797: CHAPTER X
+  +1: THE  EXECUTIVE
+  +3: 99. Executive authority of Guyana.
+
+Line 1890: CHAPTER XI
+  +1: THE JUDICATURE
+  +3: THE SUPREME COURT OF JUDICATURE
+
+Line 1978: CHAPTER XII
+  +1: THE SERVICE COMMISSIONS
+  +3: 134. The Judicial Service Commission.
+
+Line 2856: CHAPTER I
+  +1: THE STATE AND THE CONSTITUTION
+  +3: 1. Guyana   is an   indivisible, secular,   democratic
+
+Line 3099: CHAPTER II
+  +2: LAWS OF GUYANA
+  +3: 34
+
+Line 3739: CHAPTER III
+  +1: FUNDAMENTAL RIGHTS AND FREEDOMS OF THE
+  +2: INDIVIDUAL
+
+Line 3826: CHAPTER IV
+  +1: CITIZENSHIP
+  +3: 41. Every   person   who   immediately before   the
+
+Line 4295: CHAPTER V
+  +1: SUPREME ORGANS OF DEMOCRATIC POWER
+  +3: 50. The supreme organs  of  democratic power in
+
+Line 4306: CHAPTER VI
+  +1: PARLIAMENT
+  +3: COMPOSITION OF PARLIAMENT
+
+Line 4950: CHAPTER VII
+  +1: LOCAL DEMOCRACY
+  +3: LOCAL DEMOCRATIC ORGANS
+
+Line 5345: CHAPTER IX
+  +1: THE PRESIDENT
+  +3: 89. There  shall  be  a  President  of  the  Co-operative
+
+Line 5807: CHAPTER X
+  +1: THE EXECUTIVE
+  +3: 99. (1)  The executive  authority of  Guyana  shall  be
+
+Line 6763: CHAPTER XI
+  +1: THE JUDICATURE
+  +3: THE SUPREME COURT OF JUDICATURE
+
+Line 7322: CHAPTER XII
+  +1: THE SERVICE COMMISSIONS
+  +3: 134. (1) There shall be a Judicial Service Commission
+
+Line 27830: CHAPTER I
+  +1: PRELIMINARY
+
+Line 27837: CHAPTER II
+  +1: THE PUBLIC SERVICE COMMISSION
+  +3: 3. Composition and Functions, Oath of Office.
+
+Line 27873: CHAPTER III
+  +1: APPOINTMENTS, PROMOTIONS AND TRANSFERS
+  +3: 21. Application for appointment.
+
+Line 27901: CHAPTER IV
+  +1: PROBATIONARY APPOINTMENTS
+  +3: 42. Period of probation on first appointment.
+
+Line 27925: CHAPTER V
+  +1: STAFF APPRAISAL REPORTS
+  +3: 50. Staff reports. Officer to be informed of adverse report.
+
+Line 27933: CHAPTER VI
+  +1: RETIREMENT AND TERMINATION OF APPOINTMENTS
+  +3: 53. Termination of appointment by officer.
+
+Line 27967: CHAPTER VII
+  +1: DISCIPLINE
+  +3: 64. Officer liable to disciplinary proceedings.
+
+Line 28017: CHAPTER VIII
+  +1: CONDUCT
+  +2: 90. General conduct.
+  +3: 91. Duties of officer.
+
+Line 28040: CHAPTER I
+  +1: Citation.
+  +2: 1. These Rules may be cited  as  the Public  Service
+  +3: Commission Rules.
+
+Line 28317: CHAPTER II
+  +1: THE PUBLIC SERVICE COMMISSION
+  +3: 3. (1)  The Composition  and  functions  of  the  Public
+
+Line 29368: CHAPTER III
+  +1: APPOINTMENTS, PROMOTION AND TRANSFERS
+  +3: 21.  Every application  for  a  first appointment  to  the
+
+Line 30493: CHAPTER IV
+  +1: PROBATIONARY APPOINTMENTS
+  +3: 42. Except as  otherwise provided  in  this  Chapter,  an
+
+Line 30724: CHAPTER V
+  +1: STAFF APPRAISAL REPORTS
+  +3: 50. (1) A Permanent Secretary or Head of Department
+
+Line 30934: CHAPTER VI
+  +1: RETIREMENT AND TERMINATION OF
+  +2: APPOINTMENTS
+
+Line 31683: CHAPTER VII
+  +1: DISCIPLINE
+  +3: 64. An    officer who    is alleged    to    be guilty of
+
+Line 33034: CHAPTER VIII
+  +1: CONDUCT
+  +3: 90. Members and  officers of  the Commission  shall

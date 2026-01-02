@@ -9,6 +9,9 @@ dist/
 web-build/
 expo-env.d.ts
 
+# Local tooling
+.claude/
+
 # Native
 .kotlin/
 *.orig.*
@@ -39,3 +42,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Secrets
+src/config/apikey.ts
+
+# Large assets and logs
+law_sources/
+docs/logs/
