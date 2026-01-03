@@ -95,6 +95,7 @@ export type RootStackParamList = {
   ActsList: { tier_id: string; tier_name: string };
   ActPdfViewer: { actTitle: string; pdfFilename: string };
   Chat: undefined;
+  Feedback: undefined;
 };
 
 export type TabParamList = {

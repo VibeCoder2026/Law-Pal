@@ -17,6 +17,7 @@ import ActsTiersScreen from '../screens/ActsTiersScreen';
 import ActsListScreen from '../screens/ActsListScreen';
 import ActPdfViewerScreen from '../screens/ActPdfViewerScreen';
 import ChatScreen from '../screens/ChatScreen';
+import FeedbackScreen from '../screens/FeedbackScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -73,6 +74,7 @@ export default function AppNavigator() {
       <Stack.Screen name="ActsList" component={ActsListScreen} />
       <Stack.Screen name="ActPdfViewer" component={ActPdfViewerScreen} />
       <Stack.Screen name="Chat" component={ChatScreen} />
+      <Stack.Screen name="Feedback" component={FeedbackScreen} />
     </Stack.Navigator>
   );
 }

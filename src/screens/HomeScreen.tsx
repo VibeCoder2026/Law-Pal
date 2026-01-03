@@ -203,6 +203,22 @@ export default function HomeScreen() {
               Browse legislative acts and statutory laws
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.categoryCard, { backgroundColor: colors.surface }]}
+            onPress={() => navigation.navigate('Feedback')}
+            activeOpacity={0.7}
+          >
+            <View style={styles.categoryHeader}>
+              <Ionicons name="chatbox-ellipses" size={28} color={colors.primary} />
+              <Text style={[styles.categoryTitle, { color: colors.text }]}>
+                Send Feedback
+              </Text>
+            </View>
+            <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
+              Tell us what to improve or request new features
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
 
