@@ -347,45 +347,53 @@ class DatabaseService {
     ]);
 
     // Extract meaningful terms only
-    const cleanQuery = query
+    const terms = query
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')  // Remove punctuation
       .trim()
       .split(/\s+/)               // Split on whitespace
       .filter(term => term.length >= 3 && !stopWords.has(term))  // Filter stop words & short terms
-      .map(term => `"${term.replace(/"/g, '""')}"`)  // Quote each term
-      .join(' OR ');              // OR them together
+      .map(term => `"${term.replace(/"/g, '""')}"`);  // Quote each term
 
-    if (!cleanQuery) {
+    if (terms.length === 0) {
       return [];
     }
 
-    console.log(`[DB] FTS5 query: ${cleanQuery}`);
+    const orQuery = terms.join(' OR ');
+    const andQuery = terms.length > 1 ? terms.join(' AND ') : orQuery;
 
     try {
-      const results = await this.db.getAllAsync<any>(
-        `SELECT
-          s.doc_id,
-          s.chunk_id,
-          s.section_number,
-          s.heading,
-          s.text,
-          s.part,
-          s.chapter,
-          d.title as doc_title,
-          d.doc_type,
-          d.tier_id,
-          d.chapter_number
-         FROM sections s
-         LEFT JOIN documents d ON s.doc_id = d.doc_id
-         INNER JOIN sections_fts fts ON s.id = fts.rowid
-         WHERE sections_fts MATCH ?
-         ORDER BY
-           CASE WHEN s.doc_id = ? THEN 0 ELSE 1 END,
-           rank
-         LIMIT 100`,
-        [cleanQuery, CONSTITUTION_DOC_ID]
-      );
+      const runQuery = async (ftsQuery: string) => {
+        console.log(`[DB] FTS5 query: ${ftsQuery}`);
+        return this.db!.getAllAsync<any>(
+          `SELECT
+            s.doc_id,
+            s.chunk_id,
+            s.section_number,
+            s.heading,
+            s.text,
+            s.part,
+            s.chapter,
+            d.title as doc_title,
+            d.doc_type,
+            d.tier_id,
+            d.chapter_number
+           FROM sections s
+           LEFT JOIN documents d ON s.doc_id = d.doc_id
+           INNER JOIN sections_fts fts ON s.id = fts.rowid
+           WHERE sections_fts MATCH ?
+           ORDER BY
+             CASE WHEN s.doc_id = ? THEN 0 ELSE 1 END,
+             rank
+           LIMIT 100`,
+          [ftsQuery, CONSTITUTION_DOC_ID]
+        );
+      };
+
+      let results = await runQuery(andQuery);
+      if (results.length === 0 && andQuery !== orQuery) {
+        results = await runQuery(orQuery);
+      }
 
       return results.map((row) => ({
         doc_id: row.doc_id,
@@ -404,6 +412,115 @@ class DatabaseService {
       console.error('[DB] Query was:', cleanQuery);
       throw error;
     }
+  }
+
+  /**
+   * Find Acts by title tokens (used to boost Act-specific queries).
+   */
+  async searchDocumentsByTitle(
+    query: string,
+    limit = 5
+  ): Promise<Array<{ doc_id: string; title: string }>> {
+    if (!this.db) throw new Error('Database not initialized');
+
+    const stopWords = new Set([
+      'act',
+      'acts',
+      'chapter',
+      'cap',
+      'law',
+      'laws',
+      'order',
+      'regulation',
+      'regulations',
+      'section',
+      'sections',
+    ]);
+
+    const tokens = query
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter((term) => term.length >= 3 && !stopWords.has(term));
+
+    if (tokens.length === 0) {
+      return [];
+    }
+
+    const clauses = tokens.map(() => 'title LIKE ?').join(' AND ');
+    const params = tokens.map((term) => `%${term}%`);
+
+    const results = await this.db.getAllAsync<any>(
+      `SELECT doc_id, title
+       FROM documents
+       WHERE doc_type = 'act' AND ${clauses}
+       ORDER BY title ASC
+       LIMIT ?`,
+      [...params, limit]
+    );
+
+    return results.map((row) => ({
+      doc_id: row.doc_id,
+      title: row.title,
+    }));
+  }
+
+  /**
+   * Fetch a small sample of sections for specific documents.
+   */
+  async getSectionsForDocuments(
+    docIds: string[],
+    limitPerDoc = 3
+  ): Promise<SearchResult[]> {
+    if (!this.db) throw new Error('Database not initialized');
+    if (docIds.length === 0) return [];
+
+    const placeholders = docIds.map(() => '?').join(',');
+    const rows = await this.db.getAllAsync<any>(
+      `SELECT
+        s.doc_id,
+        s.chunk_id,
+        s.section_number,
+        s.heading,
+        s.text,
+        s.part,
+        s.chapter,
+        s.ordinal,
+        d.title as doc_title,
+        d.doc_type,
+        d.tier_id,
+        d.chapter_number
+       FROM sections s
+       LEFT JOIN documents d ON s.doc_id = d.doc_id
+       WHERE s.doc_id IN (${placeholders})
+       ORDER BY s.doc_id, COALESCE(s.ordinal, s.id)`,
+      docIds
+    );
+
+    const counts: Record<string, number> = {};
+    const results: SearchResult[] = [];
+
+    for (const row of rows) {
+      const count = counts[row.doc_id] || 0;
+      if (count >= limitPerDoc) continue;
+
+      counts[row.doc_id] = count + 1;
+      results.push({
+        doc_id: row.doc_id,
+        doc_title: row.doc_title || 'Constitution of Guyana',
+        doc_type: row.doc_type || 'constitution',
+        chunk_id: row.chunk_id,
+        section_number: row.section_number,
+        heading: row.heading,
+        text: row.text,
+        tier_id: row.tier_id,
+        chapter: row.chapter,
+        part: row.part,
+      });
+    }
+
+    return results;
   }
 
   /**

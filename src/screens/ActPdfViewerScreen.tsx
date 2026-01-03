@@ -36,9 +36,12 @@ export default function ActPdfViewerScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteParams>();
   const { colors, isDarkMode } = useTheme();
-  const { actTitle, pdfFilename } = route.params;
+  const { actTitle, pdfFilename, initialPage } = route.params;
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const normalizedInitialPage =
+    typeof initialPage === 'number' && initialPage > 0 ? initialPage : 1;
+  const [currentPage, setCurrentPage] = useState(normalizedInitialPage);
+  const [pdfPage, setPdfPage] = useState(normalizedInitialPage);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,8 +59,10 @@ export default function ActPdfViewerScreen() {
     setError(null);
     setLoading(true);
     setDownloadProgress(0);
+    setCurrentPage(normalizedInitialPage);
+    setPdfPage(normalizedInitialPage);
     loadPdfAsset();
-  }, [pdfFilename]);
+  }, [pdfFilename, normalizedInitialPage]);
 
   const loadPdfAsset = async () => {
     try {
@@ -263,14 +268,20 @@ export default function ActPdfViewerScreen() {
           )}
           <Pdf
             source={pdfSource!}
+            page={pdfPage}
             onLoadComplete={(numberOfPages: number) => {
               console.log('[ActPdfViewer] PDF loaded:', numberOfPages, 'pages');
               setTotalPages(numberOfPages);
+              if (pdfPage > numberOfPages) {
+                setPdfPage(1);
+                setCurrentPage(1);
+              }
               setLoading(false);
             }}
             onPageChanged={(page: number, numberOfPages: number) => {
               console.log('[ActPdfViewer] Page changed:', page, '/', numberOfPages);
               setCurrentPage(page);
+              setPdfPage(page);
             }}
             onError={(error: any) => {
               console.error('[ActPdfViewer] PDF error:', error);

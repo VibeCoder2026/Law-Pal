@@ -51,6 +51,131 @@ Output Format: Just the keywords separated by spaces. No explanation.
   }
 
   /**
+   * Remove generic legal filler terms from AI-derived keywords.
+   */
+  private sanitizeKeywords(keywords: string): string {
+    const genericTerms = new Set([
+      'act',
+      'acts',
+      'law',
+      'laws',
+      'legal',
+      'section',
+      'sections',
+      'order',
+      'orders',
+      'offence',
+      'offences',
+      'person',
+      'persons',
+      'court',
+      'chapter',
+      'cap',
+      'regulation',
+      'regulations',
+      'provision',
+      'provisions',
+      'schedule',
+      'schedules',
+    ]);
+
+    const tokens = keywords
+      .toLowerCase()
+      .replace(/[^\w\s]/g, ' ')
+      .trim()
+      .split(/\s+/)
+      .filter((term) => term.length >= 3 && !genericTerms.has(term));
+
+    return Array.from(new Set(tokens)).join(' ');
+  }
+
+  /**
+   * Determine response tone based on user query intent.
+   */
+  private determineTone(query: string): 'friendly_brief' | 'warm_supportive' | 'formal_professional' {
+    const q = query.toLowerCase();
+
+    const domesticSignals = [
+      'domestic violence',
+      'family violence',
+      'protection order',
+      'restraining order',
+      'abuse',
+      'abusive',
+      'spouse',
+      'husband',
+      'wife',
+      'partner',
+      'boyfriend',
+      'girlfriend',
+      'custody',
+      'visitation',
+      'maintenance',
+      'child support',
+      'divorce',
+      'separation',
+      'alimony',
+      'intimate',
+    ];
+
+    const criminalSignals = [
+      'crime',
+      'criminal',
+      'charge',
+      'charged',
+      'arrest',
+      'bail',
+      'prosecution',
+      'conviction',
+      'sentence',
+      'imprisonment',
+      'fine',
+      'murder',
+      'homicide',
+      'manslaughter',
+      'robbery',
+      'theft',
+      'assault',
+      'battery',
+      'fraud',
+      'drug',
+      'narcotic',
+      'firearm',
+      'weapon',
+      'rape',
+      'sexual offence',
+      'sexual offense',
+    ];
+
+    const rightsSignals = [
+      'fundamental rights',
+      'rights',
+      'freedom',
+      'equality',
+      'constitution',
+      'bill of rights',
+      'discrimination',
+      'privacy',
+      'speech',
+      'expression',
+    ];
+
+    if (domesticSignals.some((term) => q.includes(term))) {
+      return 'warm_supportive';
+    }
+
+    if (criminalSignals.some((term) => q.includes(term))) {
+      return 'formal_professional';
+    }
+
+    if (rightsSignals.some((term) => q.includes(term))) {
+      return 'friendly_brief';
+    }
+
+    return 'friendly_brief';
+  }
+
+  /**
    * Generates an answer to the user's query using the Constitution and Acts as context.
    */
   async generateAnswer(query: string, history: Message[] = []): Promise<string> {
@@ -61,11 +186,16 @@ Output Format: Just the keywords separated by spaces. No explanation.
     try {
       // 1. Query Expansion (The "Guyanese Translator")
       const legalKeywords = await this.extractSearchKeywords(query, history);
+      const refinedKeywords = this.sanitizeKeywords(legalKeywords);
       console.log(`[AIService] Expanded Query: "${query}" -> "${legalKeywords}"`);
+      if (refinedKeywords && refinedKeywords !== legalKeywords) {
+        console.log(`[AIService] Refined Keywords: "${refinedKeywords}"`);
+      }
 
       // 2. Search for relevant sections in the database
       // We search with the expanded keywords which are specifically tailored for retrieval
-      const searchResults = await DatabaseService.search(legalKeywords);
+      const searchQuery = refinedKeywords || legalKeywords || query;
+      const searchResults = await DatabaseService.search(searchQuery);
       
       // If no results, try original query
       let finalResults = searchResults;
@@ -74,10 +204,54 @@ Output Format: Just the keywords separated by spaces. No explanation.
         finalResults = await DatabaseService.search(query);
       }
 
+      // 2b. Boost Act-specific queries by matching Act titles
+      const titleMatches = await DatabaseService.searchDocumentsByTitle(query, 5);
+      if (titleMatches.length > 0) {
+        const docIds = titleMatches.map((match) => match.doc_id);
+        const boostedSections = await DatabaseService.getSectionsForDocuments(docIds, 3);
+        if (boostedSections.length > 0) {
+          const seen = new Set<string>();
+          finalResults = [...boostedSections, ...finalResults].filter((item) => {
+            const key = `${item.doc_id}:${item.chunk_id}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        }
+      }
+
       console.log(`[AIService] Found ${finalResults.length} results`);
 
-      // 3. Select top results for context (limit to top 12 for better coverage)
-      const topResults = finalResults.slice(0, 12);
+      // 3. Select top results for context (balance Constitution + Acts)
+      const indexedResults = finalResults.map((result, index) => ({ result, index }));
+      const actResults = indexedResults.filter((item) => item.result.doc_type === 'act');
+      const constitutionResults = indexedResults.filter(
+        (item) => item.result.doc_type !== 'act'
+      );
+
+      const targetSize = 12;
+      const actQuota = Math.min(6, actResults.length);
+      const constitutionQuota = Math.min(6, constitutionResults.length);
+
+      const selected: Array<{ result: typeof finalResults[number]; index: number }> = [
+        ...actResults.slice(0, actQuota),
+        ...constitutionResults.slice(0, constitutionQuota),
+      ];
+
+      const selectedIndices = new Set(selected.map((item) => item.index));
+      if (selected.length < targetSize) {
+        for (const item of indexedResults) {
+          if (!selectedIndices.has(item.index)) {
+            selected.push(item);
+            selectedIndices.add(item.index);
+            if (selected.length >= targetSize) break;
+          }
+        }
+      }
+
+      const topResults = selected
+        .sort((a, b) => a.index - b.index)
+        .map((item) => item.result);
 
       if (topResults.length === 0) {
         return "I couldn't find any specific laws matching your situation in my database. It's possible this matter is governed by Common Law or a specific Act I haven't indexed yet. I recommend consulting with a qualified attorney in Guyana.";
@@ -93,9 +267,19 @@ Output Format: Just the keywords separated by spaces. No explanation.
         return `[Source ${index + 1}] (ID: ${section.doc_id}|${section.chunk_id}) ${docDisplayTitle} | Section ${title}:\n${section.text}`;
       }).join('\n\n');
 
-      const historyText = history.slice(-5).map(m => 
+      const historyText = history.slice(-5).map(m =>
         `${m.sender === 'user' ? 'User' : 'Assistant'}: ${m.text}`
       ).join('\n');
+
+      const tone = this.determineTone(query);
+      const toneGuide = {
+        friendly_brief:
+          'Friendly and brief. Use plain language, short paragraphs, and keep it concise.',
+        warm_supportive:
+          'Warm and supportive. Use gentle, empathetic language and a reassuring tone without being overly verbose.',
+        formal_professional:
+          'Formal and professional. Use precise wording and structured paragraphs.',
+      }[tone];
 
       const systemInstruction = `
 You are Law Pal 🇬🇾, an expert legal assistant for the **Laws of Guyana**.
@@ -109,6 +293,12 @@ Your mission is to provide accurate, grounded, and helpful legal information to 
 4. **No Hallucinations:** Do not invent Acts, Sections, or legal principles not present in the Context.
 5. **Professional Disclaimer:** Always include a brief note that you are an AI and this is not professional legal advice.
 6. **No Pre-trained knowledge:** Do not use your internal knowledge about other countries' laws.
+
+**Tone & Style:**
+- ${toneGuide}
+- Be conversational, not robotic. If the user is vague, ask one short clarifying question while still answering what you can from the Context.
+- For sensitive situations, be kind and calm. If there is immediate danger, suggest contacting local emergency services (do not provide numbers).
+- Do not reintroduce yourself or repeat "Law Pal" in each response; assume the greeting was already shown in the UI.
 
 **Conversation History:**
 ${historyText}

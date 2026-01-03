@@ -179,6 +179,11 @@ export default function FeedbackScreen() {
               <Ionicons name="logo-whatsapp" size={18} color="#fff" />
               <Text style={styles.primaryButtonText}>Send via WhatsApp</Text>
             </TouchableOpacity>
+            {!isPlaceholderValue(FEEDBACK_WHATSAPP_NUMBER) && (
+              <Text style={[styles.caption, { color: colors.textSecondary }]}>
+                WhatsApp delivers to {FEEDBACK_WHATSAPP_NUMBER}
+              </Text>
+            )}
 
             <TouchableOpacity
               style={[styles.secondaryButton, { borderColor: colors.border }]}
@@ -288,5 +293,9 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontSize: 15,
     fontWeight: '500',
+  },
+  caption: {
+    fontSize: 13,
+    textAlign: 'center',
   },
 });

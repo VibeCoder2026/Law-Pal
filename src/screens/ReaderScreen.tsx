@@ -17,6 +17,7 @@ import { RootStackParamList, ConstitutionSection } from '../types';
 import DatabaseService from '../db/database';
 import { DOC_ID, CONSTITUTION_PDF_PATH } from '../constants';
 import constitutionData from '../assets/constitution.json';
+import constitutionPageIndex from '../assets/constitution-page-index.json';
 import Analytics from '../services/analytics';
 
 type ReaderRouteProp = RouteProp<RootStackParamList, 'Reader'>;
@@ -138,9 +139,18 @@ export default function ReaderScreen() {
   };
 
   const handleViewPDF = () => {
+    const pageMap =
+      (constitutionPageIndex as { sections?: Record<string, number> }).sections ||
+      (constitutionPageIndex as Record<string, number>);
+    const sectionNumber = section?.section_number?.toUpperCase();
+    const mappedPage =
+      sectionNumber && pageMap ? Number(pageMap[sectionNumber]) : undefined;
+    const initialPage = mappedPage && mappedPage > 0 ? mappedPage : undefined;
+
     navigation.navigate('ActPdfViewer', {
       actTitle: 'Constitution of the Co-operative Republic of Guyana',
       pdfFilename: CONSTITUTION_PDF_PATH,
+      initialPage,
     });
   };
 

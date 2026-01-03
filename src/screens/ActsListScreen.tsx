@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   StatusBar,
+  TextInput,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -26,6 +27,7 @@ export default function ActsListScreen() {
   const [acts, setActs] = useState<LegalDocument[]>([]);
   const [pinnedStatus, setPinnedStatus] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadActs();
@@ -79,6 +81,21 @@ export default function ActsListScreen() {
       console.error('[ActsList] No PDF filename or category for act:', act.doc_id);
     }
   };
+
+  const filteredActs = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return acts;
+
+    return acts.filter((act) => {
+      const titleMatch = act.title?.toLowerCase().includes(query);
+      const chapterMatch = act.chapter_number?.toLowerCase().includes(query);
+      return Boolean(titleMatch || chapterMatch);
+    });
+  }, [acts, searchQuery]);
+
+  const actsCountLabel = searchQuery.trim()
+    ? `${filteredActs.length} of ${acts.length} Acts`
+    : `${acts.length} Acts`;
 
   const togglePin = async (act: LegalDocument, event: any) => {
     // Stop propagation to prevent navigation
@@ -151,7 +168,7 @@ export default function ActsListScreen() {
         <View style={styles.headerText}>
           <Text style={[styles.title, { color: colors.text }]}>{tier_name}</Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            {acts.length} Acts
+            {actsCountLabel}
           </Text>
         </View>
       </View>
@@ -175,12 +192,54 @@ export default function ActsListScreen() {
           </Text>
         </View>
       ) : (
-        <FlatList
-          data={acts}
-          renderItem={renderAct}
-          keyExtractor={(item) => item.doc_id}
-          contentContainerStyle={styles.listContent}
-        />
+        <>
+          <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
+            <Ionicons
+              name="search"
+              size={20}
+              color={colors.textSecondary}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={[styles.searchInput, { color: colors.text }]}
+              placeholder="Filter Acts by title or chapter..."
+              placeholderTextColor={colors.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+              clearButtonMode="while-editing"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => setSearchQuery('')}>
+                <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+              </TouchableOpacity>
+            )}
+          </View>
+          {filteredActs.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Ionicons
+                name="search-outline"
+                size={64}
+                color={colors.textSecondary}
+                style={styles.emptyIcon}
+              />
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                No matches found
+              </Text>
+              <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
+                Try a different title or chapter number
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              data={filteredActs}
+              renderItem={renderAct}
+              keyExtractor={(item) => item.doc_id}
+              contentContainerStyle={styles.listContent}
+            />
+          )}
+        </>
       )}
     </View>
   );
@@ -225,8 +284,35 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     textAlign: 'center',
   },
+  emptySubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 6,
+  },
   listContent: {
     padding: 20,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    padding: 0,
   },
   actCard: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   FlatList,
   TouchableOpacity,
   StatusBar,
+  TextInput,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,6 +23,7 @@ export default function ArticleListScreen() {
   const route = useRoute<ArticleListRouteProp>();
   const { colors, isDarkMode } = useTheme();
   const [articles, setArticles] = useState<ConstitutionSection[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const { group } = route.params;
 
   useEffect(() => {
@@ -55,6 +57,18 @@ export default function ArticleListScreen() {
 
     setArticles(sorted);
   };
+
+  const filteredArticles = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return articles;
+
+    return articles.filter((article) => {
+      const numberMatch = article.section_number?.toLowerCase().includes(query);
+      const headingMatch = article.heading?.toLowerCase().includes(query);
+      const textMatch = article.text?.toLowerCase().includes(query);
+      return Boolean(numberMatch || headingMatch || textMatch);
+    });
+  }, [articles, searchQuery]);
 
   const renderArticle = ({ item }: { item: ConstitutionSection }) => (
     <TouchableOpacity
@@ -105,22 +119,51 @@ export default function ArticleListScreen() {
         </View>
       </View>
 
+      <View style={[styles.searchContainer, { backgroundColor: colors.surface }]}>
+        <Ionicons
+          name="search"
+          size={20}
+          color={colors.textSecondary}
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={[styles.searchInput, { color: colors.text }]}
+          placeholder="Filter by number or keyword..."
+          placeholderTextColor={colors.textSecondary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          autoCapitalize="none"
+          autoCorrect={false}
+          clearButtonMode="while-editing"
+        />
+        {searchQuery.length > 0 && (
+          <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+          </TouchableOpacity>
+        )}
+      </View>
+
       <FlatList
-        data={articles}
+        data={filteredArticles}
         renderItem={renderArticle}
         keyExtractor={(item) => item.chunk_id}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons
-              name="document-outline"
+              name={searchQuery.trim() ? 'search-outline' : 'document-outline'}
               size={64}
               color={colors.textSecondary}
               style={styles.emptyIcon}
             />
             <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
-              No articles found
+              {searchQuery.trim() ? 'No matches found' : 'No articles found'}
             </Text>
+            {searchQuery.trim() && (
+              <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
+                Try a different keyword or article number
+              </Text>
+            )}
           </View>
         }
       />
@@ -159,6 +202,28 @@ const styles = StyleSheet.create({
   listContent: {
     padding: 20,
     paddingTop: 0,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    padding: 0,
   },
   articleItem: {
     flexDirection: 'row',
@@ -210,5 +275,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 18,
     fontWeight: '500',
+  },
+  emptySubtext: {
+    fontSize: 14,
+    marginTop: 8,
+    textAlign: 'center',
   },
 });

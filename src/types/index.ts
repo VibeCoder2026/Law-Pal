@@ -93,7 +93,7 @@ export type RootStackParamList = {
   PartContents: { part?: ConstitutionPart; title?: ConstitutionTitle };
   ActsTiers: undefined;
   ActsList: { tier_id: string; tier_name: string };
-  ActPdfViewer: { actTitle: string; pdfFilename: string };
+  ActPdfViewer: { actTitle: string; pdfFilename: string; initialPage?: number };
   Chat: undefined;
   Feedback: undefined;
 };
