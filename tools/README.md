@@ -85,6 +85,16 @@ This will:
 - Organize them into category folders in `law_sources/`
 - Create a catalog.json with metadata
 
+## Build PDF URL Map (for on-demand downloads)
+
+If you want the app to download PDFs on demand instead of bundling them, generate the URL map:
+
+```bash
+node tools/build-pdf-url-map.js
+```
+
+This outputs `src/assets/acts-pdf-urls.json`, mapping `category/filename.pdf` to the source URL.
+
 **Estimated time:** 30-60 minutes
 
 ### Output Structure

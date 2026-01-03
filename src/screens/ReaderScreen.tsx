@@ -15,7 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList, ConstitutionSection } from '../types';
 import DatabaseService from '../db/database';
-import { DOC_ID } from '../constants';
+import { DOC_ID, CONSTITUTION_PDF_PATH } from '../constants';
 import constitutionData from '../assets/constitution.json';
 import Analytics from '../services/analytics';
 
@@ -140,7 +140,7 @@ export default function ReaderScreen() {
   const handleViewPDF = () => {
     navigation.navigate('ActPdfViewer', {
       actTitle: 'Constitution of the Co-operative Republic of Guyana',
-      pdfFilename: 'constitution.pdf',
+      pdfFilename: CONSTITUTION_PDF_PATH,
     });
   };
 

@@ -11,6 +11,7 @@ A mobile app for reading and searching the Constitution of Guyana offline, built
 - **Smart navigation**: Jump directly to sections by number (e.g., "146", "212A")
 - **Content versioning**: Automatic database updates when content changes
 - **Premium UX**: Enhanced list rows with preview text, stable navigation
+- **On-demand PDFs**: Acts PDFs download when opened and remain available offline
 
 ## How to Run
 
@@ -341,6 +342,7 @@ Run these tests to verify core functionality:
 ## Known Limitations
 
 - PDF viewing requires production APK build (not available in Expo Go during development)
+- First-time PDF access requires an internet connection to download the file
 - First app launch imports ~400 sections (takes 2-3 seconds)
 - Search limited to 50 results for performance
 - FTS5 queries don't support wildcards within words

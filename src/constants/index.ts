@@ -54,6 +54,8 @@ export const FONT_SIZES = {
  */
 export const DOC_ID = 'guyana-constitution'; // Full ID for consistency
 export const CONSTITUTION_DOC_ID = 'guyana-constitution';
+export const CONSTITUTION_PDF_PATH =
+  'constitutional-electoral/Ch_001_01_Constitution_of_The_Co-operative_Republic_of_Guyana_Act.pdf';
 
 /**
  * Feedback channels (set these to your own values)

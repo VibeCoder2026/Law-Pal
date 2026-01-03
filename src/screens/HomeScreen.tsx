@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../types';
 import DatabaseService from '../db/database';
+import { CONSTITUTION_PDF_PATH } from '../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -71,7 +72,7 @@ export default function HomeScreen() {
   const handleBrowseConstitution = () => {
     navigation.navigate('ActPdfViewer', {
       actTitle: 'Constitution of the Co-operative Republic of Guyana',
-      pdfFilename: 'constitution.pdf',
+      pdfFilename: CONSTITUTION_PDF_PATH,
     });
   };
 

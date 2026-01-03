@@ -8,6 +8,8 @@ import {
   ActivityIndicator,
   Platform,
   Dimensions,
+  Linking,
+  Alert,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../types';
 import * as FileSystem from 'expo-file-system';
+import pdfUrlData from '../assets/acts-pdf-urls.json';
 
 // Dynamic import for react-native-pdf (only works in custom dev client)
 let Pdf: any = null;
@@ -40,15 +43,19 @@ export default function ActPdfViewerScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pdfUri, setPdfUri] = useState<string | null>(null);
-  const [fallbackAttempted, setFallbackAttempted] = useState(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Check if PDF viewer is available
   const isPdfAvailable = Pdf !== null;
+  const pdfUrlMap = (pdfUrlData as any).urls || (pdfUrlData as any);
+  const pdfKey = pdfFilename;
 
   useEffect(() => {
     setError(null);
     setLoading(true);
-    setFallbackAttempted(false);
+    setDownloadProgress(0);
     loadPdfAsset();
   }, [pdfFilename]);
 
@@ -56,19 +63,26 @@ export default function ActPdfViewerScreen() {
     try {
       console.log('[ActPdfViewer] Loading PDF:', pdfFilename);
 
-      // For Android, use the bundle-assets protocol for APK assets
-      // PDFs are copied to android/app/src/main/assets during build
-      if (Platform.OS === 'android') {
-        // react-native-pdf expects bundle-assets:// for APK assets
-        const assetPath = `bundle-assets://law_sources/${pdfFilename}`;
-        console.log('[ActPdfViewer] Android asset path:', assetPath);
-        setPdfUri(assetPath);
-      } else {
-        // For iOS, use bundle directory
-        const bundlePath = `${(FileSystem as any).bundleDirectory}law_sources/${pdfFilename}`;
-        console.log('[ActPdfViewer] iOS bundle path:', bundlePath);
-        setPdfUri(bundlePath);
+      const localPath = `${FileSystem.documentDirectory}pdfs/${pdfKey}`;
+      const info = await FileSystem.getInfoAsync(localPath);
+
+      if (info.exists) {
+        console.log('[ActPdfViewer] Using cached PDF:', localPath);
+        setPdfUri(localPath);
+        setLoading(true);
+        return;
       }
+
+      const url = pdfUrlMap[pdfKey];
+      if (!url) {
+        setError('PDF is not available for download yet.');
+        setLoading(false);
+        return;
+      }
+
+      setDownloadUrl(url);
+      setPdfUri(null);
+      setLoading(false);
     } catch (err) {
       console.error('[ActPdfViewer] Error loading PDF asset:', err);
       setError('Could not locate PDF file');
@@ -76,7 +90,59 @@ export default function ActPdfViewerScreen() {
     }
   };
 
-  // Don't cache since PDFs are already bundled in APK assets
+  const handleDownload = async () => {
+    if (!downloadUrl) {
+      Alert.alert('Download Unavailable', 'No download link is available for this PDF.');
+      return;
+    }
+
+    try {
+      const localPath = `${FileSystem.documentDirectory}pdfs/${pdfKey}`;
+      const dirPath = localPath.substring(0, localPath.lastIndexOf('/'));
+      await FileSystem.makeDirectoryAsync(dirPath, { intermediates: true });
+
+      setIsDownloading(true);
+      setDownloadProgress(0);
+
+      const downloadResumable = FileSystem.createDownloadResumable(
+        downloadUrl,
+        localPath,
+        {},
+        (progress) => {
+          if (progress.totalBytesExpectedToWrite > 0) {
+            setDownloadProgress(
+              progress.totalBytesWritten / progress.totalBytesExpectedToWrite
+            );
+          }
+        }
+      );
+
+      const result = await downloadResumable.downloadAsync();
+      if (result?.uri) {
+        setPdfUri(result.uri);
+        setLoading(true);
+      }
+    } catch (downloadError) {
+      console.error('[ActPdfViewer] Download failed:', downloadError);
+      setError('Download failed. Check your connection and try again.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleOpenInBrowser = async () => {
+    if (!downloadUrl) {
+      Alert.alert('Link Unavailable', 'No link is available for this PDF.');
+      return;
+    }
+
+    try {
+      await Linking.openURL(downloadUrl);
+    } catch (linkError) {
+      Alert.alert('Open Failed', 'Unable to open the link.');
+    }
+  };
+
   const pdfSource = pdfUri ? { uri: pdfUri, cache: false } : null;
 
   console.log('[ActPdfViewer] PDF available:', isPdfAvailable);
@@ -137,18 +203,53 @@ export default function ActPdfViewerScreen() {
             </Text>
           </View>
         </View>
-      ) : error || !pdfSource ? (
-        <View style={styles.errorContainer}>
-          <Ionicons name="alert-circle-outline" size={64} color={colors.error} />
-          <Text style={[styles.errorText, { color: colors.error }]}>
-            {error || 'Failed to load PDF'}
+      ) : !pdfSource ? (
+        <View style={styles.downloadContainer}>
+          <Ionicons
+            name={error ? 'alert-circle-outline' : 'cloud-download-outline'}
+            size={72}
+            color={error ? colors.error : colors.primary}
+          />
+          <Text style={[styles.placeholderTitle, { color: error ? colors.error : colors.text }]}>
+            {error || 'Download PDF for Offline Use'}
           </Text>
-          <Text style={[styles.errorSubtext, { color: colors.textSecondary }]}>
-            {pdfFilename}
+          <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
+            {error
+              ? 'Check your connection or try again.'
+              : 'This document isn’t saved on your device yet.'}
           </Text>
-          <Text style={[styles.errorSubtext, { color: colors.textSecondary }]}>
-            {pdfSource?.uri || 'No PDF source'}
-          </Text>
+
+          {isDownloading ? (
+            <View style={styles.progressContainer}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={[styles.loadingText, { color: colors.textSecondary }]}>
+                Downloading... {Math.round(downloadProgress * 100)}%
+              </Text>
+            </View>
+          ) : downloadUrl ? (
+            <View style={styles.downloadActions}>
+              <TouchableOpacity
+                style={[styles.downloadButton, { backgroundColor: colors.primary }]}
+                onPress={handleDownload}
+              >
+                <Ionicons name="download-outline" size={18} color="#fff" />
+                <Text style={styles.downloadButtonText}>Download</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.secondaryButton, { borderColor: colors.border }]}
+                onPress={handleOpenInBrowser}
+              >
+                <Ionicons name="globe-outline" size={18} color={colors.text} />
+                <Text style={[styles.secondaryButtonText, { color: colors.text }]}>
+                  Open in Browser
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={[styles.placeholderText, { color: colors.textSecondary }]}>
+              No download link is available for this document.
+            </Text>
+          )}
         </View>
       ) : (
         <>
@@ -173,14 +274,6 @@ export default function ActPdfViewerScreen() {
             }}
             onError={(error: any) => {
               console.error('[ActPdfViewer] PDF error:', error);
-              if (Platform.OS === 'android' && !fallbackAttempted) {
-                const fallbackPath = `file:///android_asset/law_sources/${pdfFilename}`;
-                console.log('[ActPdfViewer] Retrying with android_asset path:', fallbackPath);
-                setFallbackAttempted(true);
-                setPdfUri(fallbackPath);
-                setLoading(true);
-                return;
-              }
               setError('Failed to load PDF. Make sure PDFs are accessible.');
               setLoading(false);
             }}
@@ -235,6 +328,12 @@ const styles = StyleSheet.create({
     height: height,
   },
   placeholderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  downloadContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -298,21 +397,40 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
   },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  progressContainer: {
     alignItems: 'center',
-    padding: 40,
-  },
-  errorText: {
-    fontSize: 18,
-    fontWeight: '600',
     marginTop: 16,
-    textAlign: 'center',
+    gap: 8,
   },
-  errorSubtext: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: 'center',
+  downloadActions: {
+    marginTop: 20,
+    width: '100%',
+    gap: 12,
+  },
+  downloadButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  downloadButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+  },
+  secondaryButtonText: {
+    fontSize: 15,
+    fontWeight: '500',
   },
 });
