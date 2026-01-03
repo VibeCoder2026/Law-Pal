@@ -60,5 +60,5 @@ export const CONSTITUTION_PDF_PATH =
 /**
  * Feedback channels (set these to your own values)
  */
-export const FEEDBACK_WHATSAPP_NUMBER = 'YOUR_WHATSAPP_NUMBER'; // e.g. 5926001234
+export const FEEDBACK_WHATSAPP_NUMBER = '+5926170517'; // e.g. 5926001234
 export const FEEDBACK_EMAIL = 'YOUR_EMAIL'; // e.g. you@example.com

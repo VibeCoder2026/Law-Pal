@@ -16,7 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../types';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import pdfUrlData from '../assets/acts-pdf-urls.json';
 
 // Dynamic import for react-native-pdf (only works in custom dev client)
