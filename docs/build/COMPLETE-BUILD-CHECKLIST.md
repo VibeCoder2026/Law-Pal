@@ -408,8 +408,8 @@ const assetPath = `file:///android_asset/law_sources/${pdfFilename}`;
 
 **Check:**
 ```powershell
-# Verify API key exists
-cat src/config/apikey.ts
+  # Verify API key exists
+  cat .env
 ```
 
 **Should show:**
@@ -417,10 +417,10 @@ cat src/config/apikey.ts
 export const GOOGLE_AI_API_KEY = 'YOUR_API_KEY_HERE';
 ```
 
-**If missing or 'YOUR_API_KEY_HERE':**
+**If missing or placeholder:**
 1. Get key: https://aistudio.google.com/app/apikey
-2. Update `src/config/apikey.ts`
-3. Rebuild NOT needed (hot reloads!)
+2. Update `.env` with `GOOGLE_AI_API_KEY=your_actual_api_key_here`
+3. Restart Metro (or hot reload if already running)
 
 ---
 

@@ -3,6 +3,14 @@ node_modules/.cache
 .expo
 .git
 *.log
+law_sources/
+docs/logs/
+tools/tmp/
+.vscode/
+.env
+.env*.local
+dist/
+web-build/
 
 # Exclude PDFs from android/assets since the plugin copies them during build
 # This prevents uploading 761MB of PDFs twice (once in law_sources, once in android/assets)

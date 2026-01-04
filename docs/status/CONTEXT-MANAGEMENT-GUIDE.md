@@ -90,7 +90,7 @@ npx expo start
 3. Configure .env
 
 ## Environment Variables
-EXPO_PUBLIC_GEMINI_API_KEY=your_key
+GOOGLE_AI_API_KEY=your_key
 ANDROID_HOME=path_to_sdk
 ```
 

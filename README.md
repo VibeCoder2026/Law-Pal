@@ -95,7 +95,7 @@ constitution-reader/
 
 ## Repository Notes
 
-- `src/config/apikey.ts` is ignored by Git; copy `src/config/apikey.example.ts` and add your key locally.
+- API key lives in `.env` (gitignored). Copy `.env.example` and set `GOOGLE_AI_API_KEY`.
 - `law_sources/` contains large PDFs and is not tracked; run `node tools/download-legal-pdfs.js` or use Git LFS if you want to publish the assets.
 
 ## Content Import & Versioning

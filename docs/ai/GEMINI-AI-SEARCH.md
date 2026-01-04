@@ -15,7 +15,7 @@ Integrate **Google Gemini AI** for intelligent legal search with voice input sup
 - **Tone routing:** Warm/supportive (domestic), formal/professional (criminal), friendly/brief (rights)
 - **Citations:** Always `lawpal://open` deep links
 - **Feedback:** Stored in `ai_feedback` (not yet used for prompt injection)
-- **API key:** `src/config/apikey.ts` (client-side)
+- **API key:** `.env` (`GOOGLE_AI_API_KEY`)
 
 **Note:** The rest of this document includes roadmap items and alternative architectures that are **not** currently implemented (voice input, backend proxy, vector DB, etc.).
 
@@ -112,7 +112,7 @@ npm install expo-speech                # For text-to-speech
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import DatabaseService from '../db/database';
 
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.GOOGLE_AI_API_KEY;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY!);
 
 export interface AISearchResult {
@@ -384,7 +384,7 @@ export default function AIAssistantScreen() {
 
 **File: `.env`**
 ```bash
-EXPO_PUBLIC_GEMINI_API_KEY=your_gemini_api_key_here
+GOOGLE_AI_API_KEY=your_gemini_api_key_here
 ```
 
 **Get API Key:**
