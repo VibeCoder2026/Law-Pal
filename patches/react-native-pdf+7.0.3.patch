@@ -1,8 +1,13 @@
 diff --git a/node_modules/react-native-pdf/android/build.gradle b/node_modules/react-native-pdf/android/build.gradle
+index 34da324..06a17aa 100644
 --- a/node_modules/react-native-pdf/android/build.gradle
 +++ b/node_modules/react-native-pdf/android/build.gradle
 @@ -10,7 +10,7 @@ buildscript {
+     }
+ 
+     dependencies {
 -        classpath("com.android.tools.build:gradle:7.4.2")
 +        classpath("com.android.tools.build:gradle:8.11.0")
      }
  }
+ 

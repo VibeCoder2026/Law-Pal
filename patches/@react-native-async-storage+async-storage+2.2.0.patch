@@ -1,10 +1,12 @@
 diff --git a/node_modules/@react-native-async-storage/async-storage/android/build.gradle b/node_modules/@react-native-async-storage/async-storage/android/build.gradle
+index 4560dc7..f6cdc7d 100644
 --- a/node_modules/@react-native-async-storage/async-storage/android/build.gradle
 +++ b/node_modules/@react-native-async-storage/async-storage/android/build.gradle
-@@ -11,6 +11,7 @@ buildscript {
+@@ -12,6 +12,7 @@ buildscript {
+         google()
+     }
      dependencies {
 +        classpath "com.android.tools.build:gradle:8.11.0"
          classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
          classpath "com.google.devtools.ksp:symbol-processing-gradle-plugin:$kspVersion"
      }
- }

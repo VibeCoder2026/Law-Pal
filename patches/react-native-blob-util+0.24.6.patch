@@ -1,9 +1,8 @@
 diff --git a/node_modules/react-native-blob-util/android/build.gradle b/node_modules/react-native-blob-util/android/build.gradle
+index 3d74e27..18c76a8 100644
 --- a/node_modules/react-native-blob-util/android/build.gradle
 +++ b/node_modules/react-native-blob-util/android/build.gradle
-@@ -33,7 +33,7 @@ buildscript {
-         repositories {
-             google()
+@@ -30,7 +30,7 @@ buildscript {
              mavenCentral()
          }
          dependencies {

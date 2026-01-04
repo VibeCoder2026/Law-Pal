@@ -1,7 +1,9 @@
 diff --git a/node_modules/react-native-safe-area-context/android/build.gradle b/node_modules/react-native-safe-area-context/android/build.gradle
+index f324b9a..929f1b6 100644
 --- a/node_modules/react-native-safe-area-context/android/build.gradle
 +++ b/node_modules/react-native-safe-area-context/android/build.gradle
 @@ -8,7 +8,7 @@ buildscript {
+ 
      dependencies {
          classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
 -        classpath("com.android.tools.build:gradle:7.3.1")
