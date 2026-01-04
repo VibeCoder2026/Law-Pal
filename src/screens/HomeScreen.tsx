@@ -182,6 +182,13 @@ export default function HomeScreen() {
       onPress: () => navigation.navigate('Chat'),
     },
     {
+      key: 'recent',
+      title: 'Recently opened',
+      description: 'Reopen acts you viewed most recently',
+      icon: 'time',
+      onPress: () => navigation.navigate('RecentItems'),
+    },
+    {
       key: 'constitution',
       title: 'Browse Constitution',
       description: 'View the complete Constitution PDF document',

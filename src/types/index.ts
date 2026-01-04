@@ -111,6 +111,7 @@ export type RootStackParamList = {
   ActPdfViewer: { actTitle: string; pdfFilename: string; initialPage?: number };
   Chat: undefined;
   Feedback: undefined;
+  RecentItems: undefined;
 };
 
 export type TabParamList = {
