@@ -37,3 +37,7 @@
 1. Spot-check Act-only queries and confirm citations.
 2. Test PDF downloads across multiple tiers and verify caching.
 3. Finish doc updates that still describe bundled PDFs.
+
+## Coming Soon
+
+- Legal Scenario Simulator: guided interviews that generate a personalized legal checklist with citations.
