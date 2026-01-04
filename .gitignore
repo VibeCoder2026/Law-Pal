@@ -11,6 +11,8 @@ expo-env.d.ts
 
 # Local tooling
 .claude/
+tools/tmp/
+.vscode/
 
 # Native
 .kotlin/
@@ -34,6 +36,7 @@ yarn-error.*
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript

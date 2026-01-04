@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FONT_SIZES } from '../constants';
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -51,7 +52,7 @@ const darkColors = {
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const systemColorScheme = useColorScheme();
   const [isDarkMode, setIsDarkMode] = useState(systemColorScheme === 'dark');
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState(FONT_SIZES.DEFAULT);
 
   useEffect(() => {
     loadSettings();
@@ -80,7 +81,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const increaseFontSize = async () => {
-    if (fontSize < 24) {
+    if (fontSize < FONT_SIZES.MAX) {
       const newSize = fontSize + 2;
       setFontSize(newSize);
       await AsyncStorage.setItem('fontSize', newSize.toString());
@@ -88,7 +89,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const decreaseFontSize = async () => {
-    if (fontSize > 12) {
+    if (fontSize > FONT_SIZES.MIN) {
       const newSize = fontSize - 2;
       setFontSize(newSize);
       await AsyncStorage.setItem('fontSize', newSize.toString());

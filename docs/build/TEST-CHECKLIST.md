@@ -2,6 +2,12 @@
 
 Quick reference for testing all core functionality.
 
+## Update (Jan 2026)
+
+Acts PDFs are now downloaded on demand. For offline testing, download a PDF once
+while online, then verify it opens again with the device offline.
+
+
 ## Must-Pass Offline Flows ⭐
 
 These 3 tests are critical - the app must pass all of them:

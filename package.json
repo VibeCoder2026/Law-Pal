@@ -23,8 +23,6 @@
     "expo-sharing": "~14.0.8",
     "expo-sqlite": "~16.0.10",
     "expo-status-bar": "~3.0.9",
-    "pdf-parse": "^2.4.5",
-    "puppeteer": "^24.34.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -36,6 +34,8 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
+    "pdf-parse": "^2.4.5",
+    "puppeteer": "^24.34.0",
     "@types/react": "~19.1.0",
     "typescript": "~5.9.2"
   },

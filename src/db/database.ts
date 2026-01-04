@@ -11,6 +11,7 @@ import {
   STORAGE_KEYS,
   CONSTITUTION_DOC_ID,
   FORCE_DB_RESET,
+  APP_CONFIG,
 } from '../constants';
 import constitutionData from '../assets/constitution.json';
 import { ConstitutionSection, Tier, LegalDocument, SearchResult } from '../types';
@@ -319,7 +320,10 @@ class DatabaseService {
   /**
    * Full-text search across Constitution and Acts
    */
-  async search(query: string): Promise<SearchResult[]> {
+  async search(
+    query: string,
+    options: { limit?: number } = {}
+  ): Promise<SearchResult[]> {
     // Reinitialize database if null (can happen during hot reload)
     if (!this.db) {
       console.warn('[DB] Database was null during search, reinitializing...');
@@ -361,6 +365,7 @@ class DatabaseService {
 
     const orQuery = terms.join(' OR ');
     const andQuery = terms.length > 1 ? terms.join(' AND ') : orQuery;
+    const limit = options.limit ?? APP_CONFIG.SEARCH.MAX_RESULTS;
 
     try {
       const runQuery = async (ftsQuery: string) => {
@@ -385,8 +390,8 @@ class DatabaseService {
            ORDER BY
              CASE WHEN s.doc_id = ? THEN 0 ELSE 1 END,
              rank
-           LIMIT 100`,
-          [ftsQuery, CONSTITUTION_DOC_ID]
+           LIMIT ?`,
+          [ftsQuery, CONSTITUTION_DOC_ID, limit]
         );
       };
 
@@ -409,7 +414,7 @@ class DatabaseService {
       }));
     } catch (error) {
       console.error('[DB] Search query failed:', error);
-      console.error('[DB] Query was:', cleanQuery);
+      console.error('[DB] Query was:', andQuery);
       throw error;
     }
   }

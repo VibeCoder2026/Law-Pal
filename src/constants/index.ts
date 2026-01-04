@@ -38,6 +38,9 @@ export const STORAGE_KEYS = {
   DB_SCHEMA_VERSION: 'db_schema_version',
   FONT_SIZE: 'reader_font_size',
   DARK_MODE: 'dark_mode',
+  RECENT_ITEMS: 'recent_items',
+  ACT_READING_PROGRESS: 'act_reading_progress',
+  ANALYTICS_QUEUE: 'analytics_queue',
 } as const;
 
 /**
@@ -47,6 +50,37 @@ export const FONT_SIZES = {
   MIN: 12,
   DEFAULT: 16,
   MAX: 24,
+} as const;
+
+/**
+ * App configuration (tune behavior in one place)
+ */
+export const APP_CONFIG = {
+  AI: {
+    CONTEXT_SIZE: 12,
+    SEARCH_RESULTS_LIMIT: 100,
+    TEMPERATURE: 0.2,
+    TOP_P: 0.8,
+    TOP_K: 40,
+    RATE_LIMIT_WINDOW_MS: 60_000,
+    RATE_LIMIT_MAX_REQUESTS: 8,
+  },
+  SEARCH: {
+    MAX_RESULTS: 50,
+  },
+  UI: {
+    MIN_FONT_SIZE: FONT_SIZES.MIN,
+    MAX_FONT_SIZE: FONT_SIZES.MAX,
+    RECENT_ITEMS_LIMIT: 8,
+  },
+  DOWNLOAD: {
+    MAX_RETRIES: 2,
+    RETRY_BASE_MS: 800,
+  },
+  ANALYTICS: {
+    STORE_LOCALLY: true,
+    MAX_QUEUE: 200,
+  },
 } as const;
 
 /**

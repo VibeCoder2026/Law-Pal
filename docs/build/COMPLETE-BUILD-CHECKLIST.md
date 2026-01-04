@@ -1,5 +1,12 @@
 # Complete Build Checklist - All Features Included
 
+## Update (Jan 2026)
+
+Acts PDFs are now downloaded on demand and cached locally. This means:
+- You no longer need to bundle `law_sources/**` in the APK.
+- Steps that copy PDFs into Android assets are legacy and can be skipped.
+- Offline testing should be done after the first download of a PDF.
+
 **Date:** January 1, 2026
 **Goal:** Build a complete local dev APK with ALL features working
 

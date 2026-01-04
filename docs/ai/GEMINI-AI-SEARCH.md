@@ -6,6 +6,21 @@ Integrate **Google Gemini AI** for intelligent legal search with voice input sup
 
 ---
 
+## Current Implementation (Jan 2026)
+
+**What is live in the app now:**
+- **Model:** `gemini-2.0-flash` via `@google/generative-ai`
+- **Service:** `src/services/AIService.ts`
+- **Retrieval flow:** Gemini keyword expansion -> stopword filtering -> FTS AND-first (OR fallback) -> Act title boost -> balanced Acts + Constitution context (top 12)
+- **Tone routing:** Warm/supportive (domestic), formal/professional (criminal), friendly/brief (rights)
+- **Citations:** Always `lawpal://open` deep links
+- **Feedback:** Stored in `ai_feedback` (not yet used for prompt injection)
+- **API key:** `src/config/apikey.ts` (client-side)
+
+**Note:** The rest of this document includes roadmap items and alternative architectures that are **not** currently implemented (voice input, backend proxy, vector DB, etc.).
+
+---
+
 ## Why Gemini?
 
 **Advantages over other options:**

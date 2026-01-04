@@ -80,6 +80,21 @@ export interface Bookmark {
   note?: string;
 }
 
+export interface RecentItem {
+  id: string;
+  item_type: 'constitution' | 'act';
+  doc_id: string;
+  chunk_id: string;
+  title: string;
+  subtitle?: string;
+  timestamp: number;
+}
+
+export interface ActReadingProgress {
+  page: number;
+  updatedAt: number;
+}
+
 export interface ReaderSettings {
   fontSize: number;
   isDarkMode: boolean;

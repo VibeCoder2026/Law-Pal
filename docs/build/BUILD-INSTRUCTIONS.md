@@ -82,11 +82,12 @@ android/app/build/outputs/apk/release/app-release.apk
 
 ## PDF File Access
 
-PDFs are bundled in the app via `law_sources/**` pattern in app.json.
+Acts PDFs are delivered on demand and cached locally.
 
-Current approach in ActPdfViewerScreen.tsx:
-- Uses `file://` protocol to access bundled PDFs
-- Path: `law_sources/{category}/{filename}.pdf`
+Current approach in `ActPdfViewerScreen.tsx`:
+- URL map: `src/assets/acts-pdf-urls.json`
+- Cache path: `FileSystem.documentDirectory/pdfs/<category>/<filename>.pdf`
+- First open requires network; later opens are offline (cached)
 
 ## Troubleshooting
 
@@ -96,8 +97,8 @@ Current approach in ActPdfViewerScreen.tsx:
 
 ### PDFs not loading
 - Check PDF path in logs: Look for `[ActPdfViewer] PDF URI:`
-- Ensure PDFs are in `law_sources/` folder
-- Verify `app.json` has `law_sources/**` in `assetBundlePatterns`
+- Confirm the Act exists in `src/assets/acts-pdf-urls.json`
+- Verify the device has network access on first download
 
 ### Metro bundler issues
 - Run: `npx expo start --dev-client --clear`

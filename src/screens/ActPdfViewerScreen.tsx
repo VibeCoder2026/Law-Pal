@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../types';
 import * as FileSystem from 'expo-file-system/legacy';
 import pdfUrlData from '../assets/acts-pdf-urls.json';
+import { addRecentItem, getActLastPage, setActReadingProgress } from '../utils/recentItems';
+import { APP_CONFIG } from '../constants';
 
 // Dynamic import for react-native-pdf (only works in custom dev client)
 let Pdf: any = null;
@@ -38,10 +40,10 @@ export default function ActPdfViewerScreen() {
   const { colors, isDarkMode } = useTheme();
   const { actTitle, pdfFilename, initialPage } = route.params;
 
-  const normalizedInitialPage =
-    typeof initialPage === 'number' && initialPage > 0 ? initialPage : 1;
-  const [currentPage, setCurrentPage] = useState(normalizedInitialPage);
-  const [pdfPage, setPdfPage] = useState(normalizedInitialPage);
+  const requestedPage =
+    typeof initialPage === 'number' && initialPage > 0 ? initialPage : null;
+  const [currentPage, setCurrentPage] = useState(requestedPage || 1);
+  const [pdfPage, setPdfPage] = useState(requestedPage || 1);
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +51,7 @@ export default function ActPdfViewerScreen() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const lastSavedPageRef = useRef<number | null>(null);
 
   // Check if PDF viewer is available
   const isPdfAvailable = Pdf !== null;
@@ -56,17 +59,43 @@ export default function ActPdfViewerScreen() {
   const pdfKey = pdfFilename;
 
   useEffect(() => {
-    setError(null);
-    setLoading(true);
-    setDownloadProgress(0);
-    setCurrentPage(normalizedInitialPage);
-    setPdfPage(normalizedInitialPage);
-    loadPdfAsset();
-  }, [pdfFilename, normalizedInitialPage]);
+    let isActive = true;
+
+    const preparePdf = async () => {
+      setError(null);
+      setLoading(true);
+      setDownloadProgress(0);
+
+      const storedPage = requestedPage ? null : await getActLastPage(pdfKey);
+      const startPage = requestedPage || storedPage || 1;
+
+      if (!isActive) return;
+
+      lastSavedPageRef.current = startPage;
+      setCurrentPage(startPage);
+      setPdfPage(startPage);
+      await loadPdfAsset();
+    };
+
+    preparePdf();
+
+    return () => {
+      isActive = false;
+    };
+  }, [pdfFilename, pdfKey, requestedPage]);
 
   const loadPdfAsset = async () => {
     try {
       console.log('[ActPdfViewer] Loading PDF:', pdfFilename);
+      await addRecentItem({
+        id: `act:${pdfKey}`,
+        item_type: 'act',
+        doc_id: pdfKey,
+        chunk_id: pdfKey,
+        title: actTitle,
+        subtitle: 'Act PDF',
+        timestamp: Date.now(),
+      });
 
       const localPath = `${FileSystem.documentDirectory}pdfs/${pdfKey}`;
       const info = await FileSystem.getInfoAsync(localPath);
@@ -109,23 +138,48 @@ export default function ActPdfViewerScreen() {
       setIsDownloading(true);
       setDownloadProgress(0);
 
-      const downloadResumable = FileSystem.createDownloadResumable(
-        downloadUrl,
-        localPath,
-        {},
-        (progress) => {
-          if (progress.totalBytesExpectedToWrite > 0) {
-            setDownloadProgress(
-              progress.totalBytesWritten / progress.totalBytesExpectedToWrite
-            );
+      const maxAttempts = Math.max(1, APP_CONFIG.DOWNLOAD.MAX_RETRIES);
+      let attempt = 0;
+      let downloadedUri: string | null = null;
+      let lastError: unknown = null;
+
+      while (attempt < maxAttempts && !downloadedUri) {
+        attempt += 1;
+        try {
+          const downloadResumable = FileSystem.createDownloadResumable(
+            downloadUrl,
+            localPath,
+            {},
+            (progress) => {
+              if (progress.totalBytesExpectedToWrite > 0) {
+                setDownloadProgress(
+                  progress.totalBytesWritten / progress.totalBytesExpectedToWrite
+                );
+              }
+            }
+          );
+
+          const result = await downloadResumable.downloadAsync();
+          if (result?.uri) {
+            downloadedUri = result.uri;
+            break;
+          }
+          throw new Error('Download did not return a file');
+        } catch (error) {
+          lastError = error;
+          if (attempt < maxAttempts) {
+            setDownloadProgress(0);
+            const delayMs = APP_CONFIG.DOWNLOAD.RETRY_BASE_MS * attempt;
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
           }
         }
-      );
+      }
 
-      const result = await downloadResumable.downloadAsync();
-      if (result?.uri) {
-        setPdfUri(result.uri);
+      if (downloadedUri) {
+        setPdfUri(downloadedUri);
         setLoading(true);
+      } else {
+        throw lastError || new Error('Download failed');
       }
     } catch (downloadError) {
       console.error('[ActPdfViewer] Download failed:', downloadError);
@@ -272,16 +326,22 @@ export default function ActPdfViewerScreen() {
             onLoadComplete={(numberOfPages: number) => {
               console.log('[ActPdfViewer] PDF loaded:', numberOfPages, 'pages');
               setTotalPages(numberOfPages);
-              if (pdfPage > numberOfPages) {
-                setPdfPage(1);
-                setCurrentPage(1);
+              const safePage = pdfPage > numberOfPages ? 1 : pdfPage;
+              if (safePage !== pdfPage) {
+                setPdfPage(safePage);
+                setCurrentPage(safePage);
               }
+              setActReadingProgress(pdfKey, safePage);
               setLoading(false);
             }}
             onPageChanged={(page: number, numberOfPages: number) => {
               console.log('[ActPdfViewer] Page changed:', page, '/', numberOfPages);
               setCurrentPage(page);
               setPdfPage(page);
+              if (lastSavedPageRef.current !== page) {
+                lastSavedPageRef.current = page;
+                setActReadingProgress(pdfKey, page);
+              }
             }}
             onError={(error: any) => {
               console.error('[ActPdfViewer] PDF error:', error);

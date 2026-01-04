@@ -1,0 +1,44 @@
+module.exports = {
+  expo: {
+    name: "Law Pal GY",
+    slug: "guyana-laws",
+    version: "1.0.1",
+    orientation: "portrait",
+    icon: "./assets/icon.png",
+    userInterfaceStyle: "light",
+    newArchEnabled: true,
+    splash: {
+      image: "./assets/splash-icon.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff"
+    },
+    ios: {
+      supportsTablet: true
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#ffffff"
+      },
+      edgeToEdgeEnabled: true,
+      predictiveBackGestureEnabled: false,
+      package: "com.lawpalgy.app"
+    },
+    platforms: ["android", "ios"],
+    plugins: [
+      "expo-dev-client",
+      "expo-sqlite",
+      "expo-asset"
+    ],
+    assetBundlePatterns: [
+      "assets/**"
+    ],
+    extra: {
+      eas: {
+        projectId: "90faa7f5-13df-49d9-933c-aff892eda35c"
+      },
+      GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY,
+      googleAiApiKey: process.env.GOOGLE_AI_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY
+    }
+  }
+};

@@ -97,6 +97,20 @@ This outputs `src/assets/acts-pdf-urls.json`, mapping `category/filename.pdf` to
 
 **Estimated time:** 30-60 minutes
 
+## Build Constitution Page Index (for deep-linking)
+
+Generates a map of Constitution article numbers to PDF page numbers so the reader can jump to the correct page.
+
+```bash
+python tools/build-constitution-page-index.py
+```
+
+**Output:** `src/assets/constitution-page-index.json`
+
+**Requirements:**
+- `pypdf` (already installed in this repo)
+- `cryptography` (needed for encrypted PDFs)
+
 ### Output Structure
 
 ```

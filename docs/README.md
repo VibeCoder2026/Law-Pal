@@ -43,6 +43,7 @@ This folder groups project docs and build logs so the repo root stays focused on
 ## Status and Planning (`docs/status/`)
 - status/CURRENT-STATUS.md
 - status/SESSION-SUMMARY.md
+- status/BETA-IMPROVEMENTS.md
 - status/IMPLEMENTATION-PLAN.md
 - status/CONTEXT-MANAGEMENT-GUIDE.md
 - status/LOADING-SCREEN-PROGRESS.md

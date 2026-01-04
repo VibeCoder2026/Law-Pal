@@ -1,11 +1,11 @@
 # AI Legal Assistant - Implementation Guide
 
-**Version:** 2.0 (Gemini 2.0 Flash - Intelligence Upgrades)
-**Date:** January 1, 2026
+**Version:** 2.1 (Gemini 2.0 Flash - Retrieval + Tone Updates)
+**Date:** January 3, 2026
 
 ## Overview
 
-The AI Legal Assistant is a **Hybrid Semantic RAG (Retrieval-Augmented Generation)** system. It provides accurate, grounded legal information by bridging the gap between natural Guyanese language and formal Statute Law.
+The AI Legal Assistant is a **Hybrid RAG (Retrieval-Augmented Generation)** system. It provides accurate, grounded legal information by bridging the gap between natural Guyanese language and formal Statute Law using local SQLite search plus Gemini synthesis.
 
 ## Architecture
 
@@ -13,53 +13,62 @@ The system uses a **multi-stage reasoning process** to ensure accuracy and relev
 
 ```mermaid
 graph TD
-    User[User Question] --> Exp[1. Cultural Expansion]
-    Exp -->|Keywords| Search[2. Local SQLite Search]
-    Search -->|Top 30 Results| Rerank[3. Semantic Re-ranking]
-    Rerank -->|Top 10 Snippets| Synthesis[4. Grounded Synthesis]
+    User[User Question] --> Exp[1. Keyword Expansion]
+    Exp -->|Refined Terms| Search[2. Local SQLite FTS (AND then OR)]
+    Search -->|Matches| Boost[3. Act Title Boost + Merge]
+    Boost -->|Balanced Top Results| Synthesis[4. Grounded Synthesis + Tone]
     Synthesis -->|Response with Deep Links| UI[5. Interactive UI]
     UI --> Feedback[6. User Validation Loop]
-    Feedback -->|Thumbs Up| SQLite[(Few-Shot Knowledge Base)]
 ```
 
 ### 1. The Knowledge Base (Local)
 *   **Storage:** SQLite Database (`constitution.db`)
-*   **Content:** 
+*   **Content:**
     *   Constitution of Guyana (931 Articles)
-    *   459 Acts of Parliament (46,558 Sections)
+    *   459 Acts of Parliament (sections imported from chunked data)
 *   **Indexing:** FTS5 (Full-Text Search 5)
 
-### 2. The Intelligence Upgrades (V2.0)
+### 2. The Intelligence Upgrades (V2.1)
 
-#### A. Semantic Hybrid Search (Re-ranking)
-Instead of relying solely on keywords, the system now fetches a broad pool of **30 results** and uses a secondary AI call to "re-rank" them. This ensures that sections related by **meaning** (not just matching words) are prioritized for the final answer.
+#### A. Keyword Expansion + Stopword Filtering
+Gemini expands the user's query into legal keywords, then the app removes overly generic legal fillers (e.g., "act", "order", "offence") before running search.
 
-#### B. Cultural & Slang Calibration
+#### B. AND-first, OR-fallback FTS
+FTS searches with a strict AND query first for precision, then falls back to OR if no results are found.
+
+#### C. Act Title Boosting
+If the user mentions an Act by name, the system adds a few sections from that Act to the context so it is not crowded out by Constitution hits.
+
+#### D. Tone Routing
+Responses adjust tone based on topic: warm/supportive for domestic cases, formal/professional for criminal matters, friendly/brief for rights questions.
+
+#### E. Rate Limiting
+Client-side throttling protects the API quota and prompts users to slow down when request volume is too high.
+
+#### F. Cultural & Slang Calibration
 The system includes a dedicated **Guyanese Legal Dictionary** mapping that translates local terms to formal law:
 *   *"Child money"* -> Maintenance Act
 *   *"Papers for land"* -> Deeds Registry / Transport
 *   *"Lock up"* -> Fundamental Rights (Arrest/Detention)
 
-#### C. Few-Shot Learning (Feedback Loop)
-The system "learns" from high-quality interactions.
-*   **Thumbs Up:** Stores the query/response in a `ai_feedback` table.
-*   **Context Injection:** Successful examples are injected back into the AI's prompt as "Few-Shot" guidance for future similar queries.
+#### F. Feedback Storage (Not Yet Used for Prompt Injection)
+User ratings are stored in `ai_feedback` for analysis. These are not yet injected into prompts.
 
 ---
 
 ## Data Flow & Prompt Engineering
 
-### Step 1: Cultural Expansion
+### Step 1: Keyword Expansion
 Resolves slang and conversation history (pronouns/follow-ups) into legal keywords.
 
-### Step 2: Retrieval & Re-ranking
-1.  Keyword search finds top 30 potential matches.
-2.  Gemini evaluates the 30 snippets and selects the 10 most semantically relevant.
+### Step 2: Retrieval + Boosting
+1.  FTS search runs a strict AND query, then falls back to OR.
+2.  If Act titles are detected, the system injects a few Act sections into the candidate pool.
 
 ### Step 3: Interactive Synthesis
-The final response is generated with **Interactive Deep Links**. 
+The final response is generated with **Interactive Deep Links**.
 *   **Format:** `[Source X](lawpal://open?docId=...&chunkId=...)`
-*   **Result:** Users can tap citations to jump directly to the specific section in the PDF reader.
+*   **Result:** Constitution citations open the exact article in the Reader; Act citations open the Act PDF (page-specific mapping is pending).
 
 ---
 
@@ -71,6 +80,8 @@ The final response is generated with **Interactive Deep Links**.
 | **Suggested Questions** | AI generates 3 logical next steps as clickable chips. |
 | **Feedback UI** | Thumbs Up (validates), Thumbs Down (flags), Flag (reports errors). |
 | **Markdown Support** | High-readability formatting with bolding and headers. |
+| **Tone Routing** | Topic-aware tone selection (domestic, criminal, rights). |
+| **Conversational Style** | Avoids re-introducing itself in every response. |
 
 ---
 
@@ -78,10 +89,15 @@ The final response is generated with **Interactive Deep Links**.
 
 | File | Purpose |
 |------|---------|
-| `src/services/AIService.ts` | The Reasoning Engine (Search expansion, Re-ranking, Synthesis). |
+| `src/services/AIService.ts` | The Reasoning Engine (Expansion, retrieval, tone-aware synthesis). |
 | `src/screens/ChatScreen.tsx` | The UI (History, suggestions, deep-link handling). |
 | `src/db/database.ts` | The Data Layer (FTS5 search, feedback persistence). |
 | `src/db/migrations.ts` | Database schema updates (Migration 3: `ai_feedback` table). |
+
+**Recent Additions (Jan 2026):**
+- AND-first/OR-fallback search in `DatabaseService.search()`.
+- Act title boosting via `searchDocumentsByTitle()` and `getSectionsForDocuments()`.
+- Tone routing and conversational guidance in `AIService`.
 
 ---
 

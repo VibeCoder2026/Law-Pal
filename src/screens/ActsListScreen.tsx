@@ -8,12 +8,13 @@ import {
   StatusBar,
   TextInput,
 } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList, LegalDocument } from '../types';
 import DatabaseService from '../db/database';
+import * as FileSystem from 'expo-file-system/legacy';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteParams = RouteProp<RootStackParamList, 'ActsList'>;
@@ -26,12 +27,50 @@ export default function ActsListScreen() {
 
   const [acts, setActs] = useState<LegalDocument[]>([]);
   const [pinnedStatus, setPinnedStatus] = useState<Record<string, boolean>>({});
+  const [downloadStatus, setDownloadStatus] = useState<Record<string, boolean>>({});
+  const [downloadedOnly, setDownloadedOnly] = useState(false);
+  const [checkingDownloads, setCheckingDownloads] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     loadActs();
   }, [tier_id]);
+
+  const getPdfKey = (act: LegalDocument): string | null => {
+    if (!act.pdf_filename || !act.category) return null;
+    return `${act.category}/${act.pdf_filename}`;
+  };
+
+  const refreshDownloadStatus = async (actsList: LegalDocument[]) => {
+    if (!FileSystem.documentDirectory) return;
+    setCheckingDownloads(true);
+    try {
+      const status: Record<string, boolean> = {};
+      await Promise.all(
+        actsList.map(async (act) => {
+          const pdfKey = getPdfKey(act);
+          if (!pdfKey) return;
+          const localPath = `${FileSystem.documentDirectory}pdfs/${pdfKey}`;
+          const info = await FileSystem.getInfoAsync(localPath);
+          status[act.doc_id] = Boolean(info.exists);
+        })
+      );
+      setDownloadStatus(status);
+    } catch (error) {
+      console.error('[ActsList] Error checking downloads:', error);
+    } finally {
+      setCheckingDownloads(false);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (acts.length > 0) {
+        refreshDownloadStatus(acts);
+      }
+    }, [acts])
+  );
 
   const loadActs = async () => {
     try {
@@ -53,13 +92,14 @@ export default function ActsListScreen() {
       // Load pinned status for all acts
       const pinnedMap: Record<string, boolean> = {};
       for (const act of actsData) {
-        const fullPath = act.category && act.pdf_filename ? `${act.category}/${act.pdf_filename}` : '';
-        if (fullPath) {
-          const isPinned = await DatabaseService.isPinned(act.doc_id, fullPath);
+        const pdfKey = getPdfKey(act);
+        if (pdfKey) {
+          const isPinned = await DatabaseService.isPinned(act.doc_id, pdfKey);
           pinnedMap[act.doc_id] = isPinned;
         }
       }
       setPinnedStatus(pinnedMap);
+      refreshDownloadStatus(actsData);
     } catch (error) {
       console.error('[ActsList] Error loading acts:', error);
       setActs([]);
@@ -70,9 +110,8 @@ export default function ActsListScreen() {
 
   const handleActPress = (act: LegalDocument) => {
     // Navigate to PDF viewer
-    if (act.pdf_filename && act.category) {
-      // Construct full path: category/filename
-      const fullPath = `${act.category}/${act.pdf_filename}`;
+    const fullPath = getPdfKey(act);
+    if (fullPath) {
       navigation.navigate('ActPdfViewer', {
         actTitle: act.title,
         pdfFilename: fullPath,
@@ -84,24 +123,32 @@ export default function ActsListScreen() {
 
   const filteredActs = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
-    if (!query) return acts;
+    const baseList = query
+      ? acts.filter((act) => {
+          const titleMatch = act.title?.toLowerCase().includes(query);
+          const chapterMatch = act.chapter_number?.toLowerCase().includes(query);
+          return Boolean(titleMatch || chapterMatch);
+        })
+      : acts;
 
-    return acts.filter((act) => {
-      const titleMatch = act.title?.toLowerCase().includes(query);
-      const chapterMatch = act.chapter_number?.toLowerCase().includes(query);
-      return Boolean(titleMatch || chapterMatch);
-    });
-  }, [acts, searchQuery]);
+    if (!downloadedOnly) return baseList;
 
-  const actsCountLabel = searchQuery.trim()
+    return baseList.filter((act) => downloadStatus[act.doc_id]);
+  }, [acts, searchQuery, downloadedOnly, downloadStatus]);
+
+  let actsCountLabel = searchQuery.trim()
     ? `${filteredActs.length} of ${acts.length} Acts`
     : `${acts.length} Acts`;
+
+  if (downloadedOnly) {
+    actsCountLabel = `${filteredActs.length} Downloaded`;
+  }
 
   const togglePin = async (act: LegalDocument, event: any) => {
     // Stop propagation to prevent navigation
     event.stopPropagation();
 
-    const fullPath = act.category && act.pdf_filename ? `${act.category}/${act.pdf_filename}` : '';
+    const fullPath = getPdfKey(act);
     if (!fullPath) return;
 
     const isPinned = pinnedStatus[act.doc_id];
@@ -121,35 +168,49 @@ export default function ActsListScreen() {
     }
   };
 
-  const renderAct = ({ item }: { item: LegalDocument }) => (
-    <TouchableOpacity
-      style={[styles.actCard, { backgroundColor: colors.surface }]}
-      onPress={() => handleActPress(item)}
-      activeOpacity={0.7}
-    >
-      <View style={styles.actContent}>
-        <Text style={[styles.actChapter, { color: colors.primary }]}>
-          Ch. {item.chapter_number}
-        </Text>
-        <Text style={[styles.actTitle, { color: colors.text }]}>
-          {item.title}
-        </Text>
-      </View>
-      <View style={styles.actActions}>
-        <TouchableOpacity
-          onPress={(e) => togglePin(item, e)}
-          style={styles.pinButton}
-        >
-          <Ionicons
-            name={pinnedStatus[item.doc_id] ? 'pin' : 'pin-outline'}
-            size={20}
-            color={pinnedStatus[item.doc_id] ? colors.accent : colors.textSecondary}
-          />
-        </TouchableOpacity>
-        <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
-      </View>
-    </TouchableOpacity>
-  );
+  const renderAct = ({ item }: { item: LegalDocument }) => {
+    const isDownloaded = Boolean(downloadStatus[item.doc_id]);
+
+    return (
+      <TouchableOpacity
+        style={[styles.actCard, { backgroundColor: colors.surface }]}
+        onPress={() => handleActPress(item)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.actContent}>
+          <Text style={[styles.actChapter, { color: colors.primary }]}>
+            Ch. {item.chapter_number}
+          </Text>
+          <Text style={[styles.actTitle, { color: colors.text }]}>
+            {item.title}
+          </Text>
+          <View style={styles.actMetaRow}>
+            <Ionicons
+              name={isDownloaded ? 'checkmark-circle' : 'cloud-outline'}
+              size={14}
+              color={isDownloaded ? colors.primary : colors.textSecondary}
+            />
+            <Text style={[styles.actMetaText, { color: colors.textSecondary }]}>
+              {isDownloaded ? 'Saved offline' : 'Download to read'}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.actActions}>
+          <TouchableOpacity
+            onPress={(e) => togglePin(item, e)}
+            style={styles.pinButton}
+          >
+            <Ionicons
+              name={pinnedStatus[item.doc_id] ? 'pin' : 'pin-outline'}
+              size={20}
+              color={pinnedStatus[item.doc_id] ? colors.accent : colors.textSecondary}
+            />
+          </TouchableOpacity>
+          <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -214,6 +275,30 @@ export default function ActsListScreen() {
               <TouchableOpacity onPress={() => setSearchQuery('')}>
                 <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
               </TouchableOpacity>
+            )}
+          </View>
+          <View style={styles.filterRow}>
+            <TouchableOpacity
+              style={[
+                styles.filterChip,
+                { borderColor: colors.border },
+                downloadedOnly && { backgroundColor: colors.primary + '15' },
+              ]}
+              onPress={() => setDownloadedOnly((prev) => !prev)}
+            >
+              <Ionicons
+                name={downloadedOnly ? 'checkmark-circle' : 'cloud-download-outline'}
+                size={16}
+                color={downloadedOnly ? colors.primary : colors.textSecondary}
+              />
+              <Text style={[styles.filterText, { color: colors.text }]}>
+                Downloaded only
+              </Text>
+            </TouchableOpacity>
+            {checkingDownloads && (
+              <Text style={[styles.filterStatus, { color: colors.textSecondary }]}>
+                Checking downloads...
+              </Text>
             )}
           </View>
           {filteredActs.length === 0 ? (
@@ -314,6 +399,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     padding: 0,
   },
+  filterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginHorizontal: 20,
+    marginBottom: 12,
+  },
+  filterChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 6,
+  },
+  filterText: {
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  filterStatus: {
+    fontSize: 12,
+  },
   actCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -337,6 +445,15 @@ const styles = StyleSheet.create({
   actTitle: {
     fontSize: 16,
     fontWeight: '500',
+  },
+  actMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 6,
+  },
+  actMetaText: {
+    fontSize: 12,
   },
   actActions: {
     flexDirection: 'row',

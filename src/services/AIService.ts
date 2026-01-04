@@ -1,22 +1,41 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { GOOGLE_AI_API_KEY } from '../config/apikey';
 import DatabaseService from '../db/database';
+import { APP_CONFIG } from '../constants';
 import { SearchResult, Message } from '../types';
 
 class AIService {
   private genAI: GoogleGenerativeAI;
   private model: any;
+  private requestTimestamps: number[] = [];
 
   constructor() {
     this.genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
     this.model = this.genAI.getGenerativeModel({ 
       model: 'gemini-2.0-flash',
       generationConfig: {
-        temperature: 0.2, // Low temperature for factual legal answers
-        topP: 0.8,
-        topK: 40,
+        temperature: APP_CONFIG.AI.TEMPERATURE, // Low temperature for factual legal answers
+        topP: APP_CONFIG.AI.TOP_P,
+        topK: APP_CONFIG.AI.TOP_K,
       }
     });
+  }
+
+  private canMakeRequest(): boolean {
+    const now = Date.now();
+    const windowMs = APP_CONFIG.AI.RATE_LIMIT_WINDOW_MS;
+    const maxRequests = APP_CONFIG.AI.RATE_LIMIT_MAX_REQUESTS;
+
+    this.requestTimestamps = this.requestTimestamps.filter(
+      (timestamp) => now - timestamp < windowMs
+    );
+
+    if (this.requestTimestamps.length >= maxRequests) {
+      return false;
+    }
+
+    this.requestTimestamps.push(now);
+    return true;
   }
 
   /**
@@ -184,6 +203,9 @@ Output Format: Just the keywords separated by spaces. No explanation.
     }
 
     try {
+      if (!this.canMakeRequest()) {
+        return "You're sending requests too quickly. Please wait a moment and try again.";
+      }
       // 1. Query Expansion (The "Guyanese Translator")
       const legalKeywords = await this.extractSearchKeywords(query, history);
       const refinedKeywords = this.sanitizeKeywords(legalKeywords);
@@ -195,13 +217,17 @@ Output Format: Just the keywords separated by spaces. No explanation.
       // 2. Search for relevant sections in the database
       // We search with the expanded keywords which are specifically tailored for retrieval
       const searchQuery = refinedKeywords || legalKeywords || query;
-      const searchResults = await DatabaseService.search(searchQuery);
+      const searchResults = await DatabaseService.search(searchQuery, {
+        limit: APP_CONFIG.AI.SEARCH_RESULTS_LIMIT,
+      });
       
       // If no results, try original query
       let finalResults = searchResults;
       if (searchResults.length === 0) {
         console.log('[AIService] No results for keywords, trying original query...');
-        finalResults = await DatabaseService.search(query);
+        finalResults = await DatabaseService.search(query, {
+          limit: APP_CONFIG.AI.SEARCH_RESULTS_LIMIT,
+        });
       }
 
       // 2b. Boost Act-specific queries by matching Act titles
@@ -229,9 +255,10 @@ Output Format: Just the keywords separated by spaces. No explanation.
         (item) => item.result.doc_type !== 'act'
       );
 
-      const targetSize = 12;
-      const actQuota = Math.min(6, actResults.length);
-      const constitutionQuota = Math.min(6, constitutionResults.length);
+      const targetSize = APP_CONFIG.AI.CONTEXT_SIZE;
+      const halfTarget = Math.max(1, Math.floor(targetSize / 2));
+      const actQuota = Math.min(halfTarget, actResults.length);
+      const constitutionQuota = Math.min(halfTarget, constitutionResults.length);
 
       const selected: Array<{ result: typeof finalResults[number]; index: number }> = [
         ...actResults.slice(0, actQuota),

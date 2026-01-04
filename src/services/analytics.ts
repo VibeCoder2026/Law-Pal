@@ -9,6 +9,9 @@
  *   Analytics.trackError(error, 'Failed to load article');
  */
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { APP_CONFIG, STORAGE_KEYS } from '../constants';
+
 interface EventProperties {
   [key: string]: string | number | boolean | undefined;
 }
@@ -19,9 +22,29 @@ interface ErrorContext {
   metadata?: Record<string, any>;
 }
 
+interface AnalyticsEvent {
+  name: string;
+  timestamp: string;
+  sessionDuration: number;
+  properties?: EventProperties;
+}
+
 class AnalyticsService {
   private enabled: boolean = true;
   private sessionStartTime: number = Date.now();
+
+  private async enqueueEvent(event: AnalyticsEvent): Promise<void> {
+    if (!APP_CONFIG.ANALYTICS.STORE_LOCALLY) return;
+
+    try {
+      const raw = await AsyncStorage.getItem(STORAGE_KEYS.ANALYTICS_QUEUE);
+      const queue = raw ? (JSON.parse(raw) as AnalyticsEvent[]) : [];
+      const nextQueue = [event, ...queue].slice(0, APP_CONFIG.ANALYTICS.MAX_QUEUE);
+      await AsyncStorage.setItem(STORAGE_KEYS.ANALYTICS_QUEUE, JSON.stringify(nextQueue));
+    } catch (error) {
+      console.error('[Analytics] Failed to enqueue event', error);
+    }
+  }
 
   /**
    * Track a custom event
@@ -36,6 +59,13 @@ class AnalyticsService {
       timestamp,
       sessionDuration,
       ...properties,
+    });
+
+    void this.enqueueEvent({
+      name: eventName,
+      timestamp,
+      sessionDuration,
+      properties,
     });
 
     // TODO: Send to analytics service (Firebase, Mixpanel, etc.)
@@ -129,6 +159,17 @@ class AnalyticsService {
 
     console.error(`[Analytics] ❌ ERROR`, errorInfo);
 
+    void this.enqueueEvent({
+      name: 'error',
+      timestamp,
+      sessionDuration: Math.floor((Date.now() - this.sessionStartTime) / 1000),
+      properties: {
+        message: errorInfo.message,
+        component: context?.component,
+        action: context?.action,
+      },
+    });
+
     // TODO: Send to error tracking service (Sentry, Bugsnag, etc.)
     // Example:
     // Sentry.captureException(error, {
@@ -143,6 +184,16 @@ class AnalyticsService {
     console.error(`[Analytics] 💥 CRASH (fatal: ${isFatal})`, {
       message: error.message,
       stack: error.stack,
+    });
+
+    void this.enqueueEvent({
+      name: 'crash',
+      timestamp: new Date().toISOString(),
+      sessionDuration: Math.floor((Date.now() - this.sessionStartTime) / 1000),
+      properties: {
+        message: error.message,
+        fatal: isFatal,
+      },
     });
 
     // TODO: Send to crash reporting service

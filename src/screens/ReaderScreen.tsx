@@ -19,6 +19,7 @@ import { DOC_ID, CONSTITUTION_PDF_PATH } from '../constants';
 import constitutionData from '../assets/constitution.json';
 import constitutionPageIndex from '../assets/constitution-page-index.json';
 import Analytics from '../services/analytics';
+import { addRecentItem } from '../utils/recentItems';
 
 type ReaderRouteProp = RouteProp<RootStackParamList, 'Reader'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -70,6 +71,15 @@ export default function ReaderScreen() {
       } else {
         // Track article opened
         Analytics.trackOpenArticle(data.section_number, 'library');
+        await addRecentItem({
+          id: `${DOC_ID}:${data.chunk_id}`,
+          item_type: 'constitution',
+          doc_id: DOC_ID,
+          chunk_id: data.chunk_id,
+          title: `Article ${data.section_number}`,
+          subtitle: data.heading || undefined,
+          timestamp: Date.now(),
+        });
       }
 
       setSection(data);

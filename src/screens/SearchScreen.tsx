@@ -16,6 +16,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList, SearchResult } from '../types';
 import DatabaseService from '../db/database';
 import Analytics from '../services/analytics';
+import { APP_CONFIG } from '../constants';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -36,7 +37,9 @@ export default function SearchScreen() {
 
     setIsSearching(true);
     try {
-      const searchResults = await DatabaseService.search(text);
+      const searchResults = await DatabaseService.search(text, {
+        limit: APP_CONFIG.SEARCH.MAX_RESULTS,
+      });
       setResults(searchResults);
       Analytics.trackSearch(text, searchResults.length);
     } catch (error) {

@@ -7,14 +7,16 @@ import {
   TouchableOpacity,
   StatusBar,
   FlatList,
+  Alert,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import { RootStackParamList } from '../types';
+import { RootStackParamList, RecentItem, ActReadingProgress } from '../types';
 import DatabaseService from '../db/database';
 import { CONSTITUTION_PDF_PATH } from '../constants';
+import { getRecentItems, getActProgressMap, clearRecentItems } from '../utils/recentItems';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -44,6 +46,8 @@ export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { colors, isDarkMode, toggleDarkMode } = useTheme();
   const [pinnedItems, setPinnedItems] = useState<PinnedItem[]>([]);
+  const [recentItems, setRecentItems] = useState<RecentItem[]>([]);
+  const [recentProgress, setRecentProgress] = useState<Record<string, ActReadingProgress>>({});
   const pinnedListRef = useRef<FlatList<PinnedListItem>>(null);
   const pinnedSectionWidthRef = useRef(0);
   const isPinnedResettingRef = useRef(false);
@@ -62,10 +66,24 @@ export default function HomeScreen() {
     }
   }, []);
 
+  const loadRecentItems = useCallback(async () => {
+    try {
+      const items = await getRecentItems();
+      setRecentItems(items);
+      if (items.length > 0) {
+        const progressMap = await getActProgressMap();
+        setRecentProgress(progressMap);
+      }
+    } catch (error) {
+      console.error('[HomeScreen] Failed to load recent items:', error);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
       loadPinnedItems();
-    }, [loadPinnedItems])
+      loadRecentItems();
+    }, [loadPinnedItems, loadRecentItems])
   );
 
   useEffect(() => {
@@ -90,6 +108,53 @@ export default function HomeScreen() {
         pdfFilename: item.chunk_id, // For Acts, chunk_id stores the PDF filename
       });
     }
+  };
+
+  const handleRecentItemPress = (item: RecentItem) => {
+    if (item.item_type === 'constitution') {
+      navigation.navigate('Reader', {
+        doc_id: item.doc_id,
+        chunk_id: item.chunk_id,
+      });
+      return;
+    }
+
+    const progress = recentProgress[item.chunk_id];
+    const initialPage = progress && progress.page > 0 ? progress.page : undefined;
+    navigation.navigate('ActPdfViewer', {
+      actTitle: item.title,
+      pdfFilename: item.chunk_id,
+      initialPage,
+    });
+  };
+
+  const handleClearRecents = () => {
+    Alert.alert(
+      'Clear recent items?',
+      'This will remove all recent items from the Home screen.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear',
+          style: 'destructive',
+          onPress: async () => {
+            await clearRecentItems();
+            setRecentItems([]);
+            setRecentProgress({});
+          },
+        },
+      ]
+    );
+  };
+
+  const formatRelativeTime = (timestamp?: number) => {
+    if (!timestamp) return 'Just now';
+    const diffMs = Date.now() - timestamp;
+    if (diffMs < 60_000) return 'Just now';
+    if (diffMs < 3_600_000) return `${Math.floor(diffMs / 60_000)}m ago`;
+    if (diffMs < 86_400_000) return `${Math.floor(diffMs / 3_600_000)}h ago`;
+    if (diffMs < 604_800_000) return `${Math.floor(diffMs / 86_400_000)}d ago`;
+    return new Date(timestamp).toLocaleDateString();
   };
 
   const handleUnpin = async (item: PinnedItem, event: any) => {
@@ -295,6 +360,64 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        {recentItems.length > 0 && (
+          <View style={styles.section}>
+            <View style={styles.recentHeaderRow}>
+              <View style={styles.recentHeaderLeft}>
+                <Ionicons name="time" size={20} color={colors.primary} />
+                <Text style={[styles.sectionTitle, { color: colors.text, marginLeft: 8, marginBottom: 0 }]}>
+                  Recent
+                </Text>
+              </View>
+              <TouchableOpacity onPress={handleClearRecents} style={styles.clearButton}>
+                <Text style={[styles.clearButtonText, { color: colors.textSecondary }]}>
+                  Clear
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.recentContainer}
+              data={recentItems}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => {
+                const progress = item.item_type === 'act' ? recentProgress[item.chunk_id] : null;
+                const progressLabel = progress ? `Page ${progress.page}` : undefined;
+                const metaParts = [progressLabel, formatRelativeTime(item.timestamp)].filter(Boolean);
+                return (
+                  <TouchableOpacity
+                    style={[styles.recentCard, { backgroundColor: colors.surface }]}
+                    onPress={() => handleRecentItemPress(item)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.recentIconContainer, { backgroundColor: colors.primary + '15' }]}>
+                      <Ionicons
+                        name={item.item_type === 'constitution' ? 'document-text' : 'hammer'}
+                        size={22}
+                        color={colors.primary}
+                      />
+                    </View>
+                    <Text style={[styles.recentTitle, { color: colors.text }]} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                    {item.subtitle && (
+                      <Text style={[styles.recentSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {item.subtitle}
+                      </Text>
+                    )}
+                    {metaParts.length > 0 && (
+                      <Text style={[styles.recentMeta, { color: colors.textSecondary }]}>
+                        {metaParts.join(' - ')}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                );
+              }}
+            />
+          </View>
+        )}
+
         {pinnedItems.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -494,6 +617,63 @@ const styles = StyleSheet.create({
   pinnedSubtitle: {
     fontSize: 12,
     lineHeight: 16,
+  },
+  recentHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingLeft: 20,
+    paddingRight: 20,
+    marginBottom: 15,
+  },
+  recentHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  clearButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  clearButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  recentContainer: {
+    paddingLeft: 20,
+    paddingRight: 20,
+    gap: 12,
+  },
+  recentCard: {
+    width: 180,
+    padding: 14,
+    borderRadius: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+  },
+  recentIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  recentTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+  recentSubtitle: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  recentMeta: {
+    fontSize: 11,
+    marginTop: 6,
   },
   categoryCard: {
     padding: 16,
