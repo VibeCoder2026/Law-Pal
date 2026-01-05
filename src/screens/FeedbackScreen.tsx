@@ -73,8 +73,13 @@ export default function FeedbackScreen() {
         body: formData.toString(),
       });
 
+      const status = response?.status ?? 0;
+      if (status < 200 || status >= 400) {
+        throw new Error(`Google Form submission failed (${status})`);
+      }
+
       // Google Forms returns a redirect (302) or HTML page on success
-      // We consider it successful if we don't get a network error
+      // We consider it successful if we don't get a 4xx/5xx response
       Analytics.trackEvent('feedback_submit', {
         channel: 'google_form_background',
         rating: rating,

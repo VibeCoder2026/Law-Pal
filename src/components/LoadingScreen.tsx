@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, StatusBar, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -21,7 +21,7 @@ const LEGAL_FACTS = [
 export default function LoadingScreen() {
   const { colors, isDarkMode } = useTheme();
   const [factIndex, setFactIndex] = useState(0);
-  const fadeAnim = new Animated.Value(0);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     // Cycle through facts every 3 seconds
@@ -47,7 +47,7 @@ export default function LoadingScreen() {
     }).start();
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fadeAnim]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
