@@ -7,6 +7,7 @@ export interface ConstitutionDocument {
 }
 
 export interface ConstitutionSection {
+  doc_id?: string;
   chunk_id: string;
   section_number: string;
   heading?: string;

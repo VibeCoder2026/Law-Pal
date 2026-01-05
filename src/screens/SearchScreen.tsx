@@ -62,7 +62,9 @@ export default function SearchScreen() {
     return (
       <TouchableOpacity
         style={[styles.resultItem, { backgroundColor: colors.surface }]}
-        onPress={() => navigation.navigate('Reader', { chunk_id: item.chunk_id, doc_id: item.doc_id })}
+        onPress={() =>
+          navigation.navigate('Reader', { chunk_id: item.chunk_id, doc_id: item.doc_id })
+        }
       >
         <View style={styles.resultHeader}>
           <Ionicons name={isAct ? "hammer" : "document-text"} size={18} color={colors.primary} />

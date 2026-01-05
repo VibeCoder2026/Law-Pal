@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -9,18 +9,53 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  useWindowDimensions,
+  Linking,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
-import Markdown from 'react-native-markdown-display';
+import RenderHTML from 'react-native-render-html';
+import { marked } from 'marked';
 import AIService from '../services/AIService';
 import DatabaseService from '../db/database';
 import { Message } from '../types';
+import { getActMetadataById, getActPdfPath } from '../utils/actsMetadata';
+
+marked.setOptions({
+  breaks: true,
+  mangle: false,
+  headerIds: false,
+});
 
 const ChatScreen = ({ navigation }: any) => {
   const { colors, isDarkMode } = useTheme();
+  const { width } = useWindowDimensions();
+  const htmlBaseStyle = useMemo(
+    () => ({ color: colors.text, fontSize: 16, lineHeight: 22 }),
+    [colors.text]
+  );
+  const htmlTagsStyles = useMemo(
+    () => ({
+      p: { color: colors.text, marginTop: 0, marginBottom: 8 },
+      h1: { color: colors.text, fontWeight: 'bold', marginBottom: 8 },
+      h2: { color: colors.text, fontWeight: 'bold', marginBottom: 8 },
+      h3: { color: colors.text, fontWeight: 'bold', marginBottom: 8 },
+      strong: { fontWeight: 'bold', color: colors.text },
+      a: { color: colors.accent },
+      blockquote: {
+        backgroundColor: 'transparent',
+        borderLeftColor: colors.border,
+        borderLeftWidth: 2,
+        paddingLeft: 8,
+      },
+      code: { backgroundColor: 'transparent' },
+      pre: { backgroundColor: 'transparent' },
+      li: { color: colors.text },
+    }),
+    [colors.text, colors.accent, colors.border]
+  );
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'welcome',
@@ -131,44 +166,88 @@ const ChatScreen = ({ navigation }: any) => {
     await AIService.submitFeedback(userQuery, botMessage.text, nextRating);
   };
 
-  const handleCitationPress = async (docId: string, chunkId: string) => {
+  const handleCitationPress = useCallback(async (docId: string, chunkId: string) => {
     try {
       // Get document details to determine if it's Constitution or Act
       const document = await DatabaseService.getDocumentById(docId);
+      const isAct = document?.doc_type === 'act' || docId.startsWith('act-');
 
       if (!document) {
-        // Fallback: assume Constitution if no document found
-        navigation.navigate('Reader', { doc_id: docId, chunk_id: chunkId });
-        return;
+        if (!isAct) {
+          // Fallback: assume Constitution if no document found
+          navigation.navigate('Reader', { doc_id: docId, chunk_id: chunkId });
+          return;
+        }
       }
 
-      if (document.doc_type === 'constitution') {
+      if (!isAct) {
         // Constitution: Navigate directly to article
         navigation.navigate('Reader', { doc_id: docId, chunk_id: chunkId });
-      } else if (document.doc_type === 'act') {
+      } else {
         // Act: Navigate directly to PDF
-        const pdfPath = document.category && document.pdf_filename
+        const section = await DatabaseService.getSectionByChunkId(chunkId).catch(() => null);
+        const initialPage = await DatabaseService.getActPageHint(
+          docId,
+          chunkId,
+          section?.text
+        );
+        const pdfPath = document?.category && document?.pdf_filename
           ? `${document.category}/${document.pdf_filename}`
-          : null;
+          : getActPdfPath(docId);
+        const actTitle = document?.title || getActMetadataById(docId)?.title || 'Act';
 
-        if (pdfPath) {
-          navigation.navigate('ActPdfViewer', {
-            actTitle: document.title,
-            pdfFilename: pdfPath,
-          });
-        } else {
-          console.error('[ChatScreen] No PDF path for Act:', docId);
+        if (!pdfPath) {
+          Alert.alert('PDF Unavailable', 'This Act does not have a PDF available yet.');
+          return;
         }
+
+        navigation.navigate('ActPdfViewer', {
+          actTitle,
+          pdfFilename: pdfPath,
+          initialPage,
+        });
       }
     } catch (error) {
       console.error('[ChatScreen] Error handling citation press:', error);
       // Fallback to Reader
       navigation.navigate('Reader', { doc_id: docId, chunk_id: chunkId });
     }
-  };
+  }, [navigation]);
+
+  const handleLinkPress = useCallback(
+    (href?: string | null) => {
+      if (!href) return;
+      if (href.startsWith('lawpal://open')) {
+        const docIdMatch = href.match(/[?&]docId=([^&]+)/);
+        const chunkIdMatch = href.match(/[?&]chunkId=([^&]+)/);
+
+        const docId = docIdMatch ? decodeURIComponent(docIdMatch[1]) : null;
+        const chunkId = chunkIdMatch ? decodeURIComponent(chunkIdMatch[1]) : null;
+
+        if (docId && chunkId) {
+          handleCitationPress(docId, chunkId);
+          return;
+        }
+      }
+      Linking.openURL(href).catch(() => {});
+    },
+    [handleCitationPress]
+  );
+
+  const renderersProps = useMemo(
+    () => ({
+      a: {
+        onPress: (_event: unknown, href: string) => {
+          handleLinkPress(href);
+        },
+      },
+    }),
+    [handleLinkPress]
+  );
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isUser = item.sender === 'user';
+    const contentWidth = Math.min(width * 0.85, width);
     
     return (
       <View
@@ -194,37 +273,13 @@ const ChatScreen = ({ navigation }: any) => {
             {isUser ? (
               <Text style={[styles.messageText, { color: '#FFF' }]}>{item.text}</Text>
             ) : (
-              <Markdown
-                onLinkPress={(url) => {
-                  if (url.startsWith('lawpal://open')) {
-                    // Parse docId and chunkId from URL using regex
-                    const docIdMatch = url.match(/docId=([^&]+)/);
-                    const chunkIdMatch = url.match(/chunkId=([^&]+)/);
-
-                    const docId = docIdMatch ? docIdMatch[1] : null;
-                    const chunkId = chunkIdMatch ? chunkIdMatch[1] : null;
-
-                    if (docId && chunkId) {
-                      handleCitationPress(docId, chunkId);
-                      return false; // Prevent default link handling
-                    }
-                  }
-                  return true;
-                }}
-                style={{
-                  body: { color: colors.text, fontSize: 16 },
-                  heading1: { color: colors.text, fontWeight: 'bold' },
-                  heading2: { color: colors.text, fontWeight: 'bold' },
-                  strong: { fontWeight: 'bold', color: colors.text },
-                  link: { color: colors.accent },
-                  code_inline: { backgroundColor: 'transparent' },
-                  code_block: { backgroundColor: 'transparent' },
-                  fence: { backgroundColor: 'transparent' },
-                  blockquote: { backgroundColor: 'transparent' },
-                }}
-              >
-                {item.text}
-              </Markdown>
+              <RenderHTML
+                contentWidth={contentWidth}
+                source={{ html: marked.parse(item.text) }}
+                baseStyle={htmlBaseStyle}
+                tagsStyles={htmlTagsStyles}
+                renderersProps={renderersProps}
+              />
             )}
           </View>
           

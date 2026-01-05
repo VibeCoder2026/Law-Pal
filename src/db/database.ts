@@ -16,6 +16,7 @@ import {
 import constitutionData from '../assets/constitution.json';
 import { ConstitutionSection, Tier, LegalDocument, SearchResult } from '../types';
 import { runMigrations, getCurrentVersion } from './migrations';
+import { extractPageFromText } from '../utils/pdfPage';
 
 class DatabaseService {
   public db: SQLite.SQLiteDatabase | null = null;
@@ -262,6 +263,7 @@ class DatabaseService {
     if (!result) return null;
 
     return {
+      doc_id: result.doc_id,
       chunk_id: result.chunk_id,
       section_number: result.section_number,
       heading: result.heading,
@@ -286,6 +288,7 @@ class DatabaseService {
     if (!result) return null;
 
     return {
+      doc_id: result.doc_id,
       chunk_id: result.chunk_id,
       section_number: result.section_number,
       heading: result.heading,
@@ -307,6 +310,7 @@ class DatabaseService {
     );
 
     return results.map((row) => ({
+      doc_id: row.doc_id,
       chunk_id: row.chunk_id,
       section_number: row.section_number,
       heading: row.heading,
@@ -400,10 +404,12 @@ class DatabaseService {
         results = await runQuery(orQuery);
       }
 
-      return results.map((row) => ({
+      return results.map((row) => {
+        const docType = row.doc_type || (row.doc_id?.startsWith('act-') ? 'act' : 'constitution');
+        return {
         doc_id: row.doc_id,
         doc_title: row.doc_title || 'Constitution of Guyana',
-        doc_type: row.doc_type || 'constitution',
+        doc_type: docType,
         chunk_id: row.chunk_id,
         section_number: row.section_number,
         heading: row.heading,
@@ -411,7 +417,8 @@ class DatabaseService {
         tier_id: row.tier_id,
         chapter: row.chapter,
         part: row.part,
-      }));
+        };
+      });
     } catch (error) {
       console.error('[DB] Search query failed:', error);
       console.error('[DB] Query was:', andQuery);
@@ -580,6 +587,7 @@ class DatabaseService {
     );
 
     return results.map((row) => ({
+      doc_id: row.doc_id,
       chunk_id: row.chunk_id,
       section_number: row.section_number,
       heading: row.heading,
@@ -731,6 +739,7 @@ class DatabaseService {
     );
 
     return results.map((row) => ({
+      doc_id: row.doc_id,
       chunk_id: row.chunk_id,
       section_number: row.section_number,
       heading: row.heading,
@@ -739,6 +748,51 @@ class DatabaseService {
       chapter: row.chapter,
       baseArticle: row.section_number,
     }));
+  }
+
+  /**
+   * Best-effort page hint for Act sections.
+   * Uses embedded "LAWS OF GUYANA <page>" markers from nearby sections.
+   */
+  async getActPageHint(
+    docId: string,
+    chunkId: string,
+    sectionText?: string | null
+  ): Promise<number | undefined> {
+    if (!this.db) throw new Error('Database not initialized');
+    if (!docId.startsWith('act-')) return undefined;
+
+    let page = extractPageFromText(sectionText);
+    if (page) return page;
+
+    const row = await this.db.getFirstAsync<any>(
+      'SELECT id, ordinal, text FROM sections WHERE doc_id = ? AND chunk_id = ? LIMIT 1',
+      [docId, chunkId]
+    );
+
+    if (!row) return undefined;
+
+    page = extractPageFromText(row.text);
+    if (page) return page;
+
+    const orderValue = row.ordinal ?? row.id;
+    const candidates = await this.db.getAllAsync<any>(
+      `SELECT text
+       FROM sections
+       WHERE doc_id = ?
+         AND COALESCE(ordinal, id) <= ?
+         AND text LIKE '%LAWS%GUYANA%'
+       ORDER BY COALESCE(ordinal, id) DESC
+       LIMIT 8`,
+      [docId, orderValue]
+    );
+
+    for (const candidate of candidates) {
+      page = extractPageFromText(candidate.text);
+      if (page) return page;
+    }
+
+    return undefined;
   }
 
   /**

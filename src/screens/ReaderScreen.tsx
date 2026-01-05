@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -13,13 +13,14 @@ import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
-import { RootStackParamList, ConstitutionSection } from '../types';
+import { RootStackParamList, ConstitutionSection, LegalDocument } from '../types';
 import DatabaseService from '../db/database';
 import { DOC_ID, CONSTITUTION_PDF_PATH } from '../constants';
 import constitutionData from '../assets/constitution.json';
 import constitutionPageIndex from '../assets/constitution-page-index.json';
 import Analytics from '../services/analytics';
 import { addRecentItem } from '../utils/recentItems';
+import { getActMetadataById, getActPdfPath } from '../utils/actsMetadata';
 
 type ReaderRouteProp = RouteProp<RootStackParamList, 'Reader'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -31,16 +32,29 @@ export default function ReaderScreen() {
     useTheme();
 
   const [section, setSection] = useState<ConstitutionSection | null>(null);
+  const [documentInfo, setDocumentInfo] = useState<LegalDocument | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isPinned, setIsPinned] = useState(false);
   const [showControls, setShowControls] = useState(false);
+  const docId = useMemo(
+    () => route.params?.doc_id || section?.doc_id || DOC_ID,
+    [route.params?.doc_id, section?.doc_id]
+  );
+  const isAct = useMemo(
+    () => docId.startsWith('act-') || documentInfo?.doc_type === 'act',
+    [docId, documentInfo?.doc_type]
+  );
 
   useEffect(() => {
     loadSection();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params.chunk_id, route.params.doc_id]);
+
+  useEffect(() => {
     checkBookmark();
     checkPinned();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [route.params.chunk_id]);
+  }, [route.params.chunk_id, docId]);
 
   const loadSection = async () => {
     const chunkId = route.params?.chunk_id;
@@ -58,6 +72,9 @@ export default function ReaderScreen() {
         console.log('[ReaderScreen] Falling back to JSON data');
         const sections = constitutionData.sections as ConstitutionSection[];
         data = sections.find(s => s.chunk_id === chunkId) || null;
+        if (data) {
+          data.doc_id = DOC_ID;
+        }
         console.log('[ReaderScreen] JSON result:', data ? 'Found' : 'Not found');
       }
 
@@ -72,17 +89,25 @@ export default function ReaderScreen() {
         // Track article opened
         Analytics.trackOpenArticle(data.section_number, 'library');
         await addRecentItem({
-          id: `${DOC_ID}:${data.chunk_id}`,
-          item_type: 'constitution',
-          doc_id: DOC_ID,
+          id: `${data.doc_id || DOC_ID}:${data.chunk_id}`,
+          item_type: data.doc_id?.startsWith('act-') ? 'act' : 'constitution',
+          doc_id: data.doc_id || DOC_ID,
           chunk_id: data.chunk_id,
-          title: `Article ${data.section_number}`,
+          title: `${data.doc_id?.startsWith('act-') ? 'Section' : 'Article'} ${data.section_number}`,
           subtitle: data.heading || undefined,
           timestamp: Date.now(),
         });
       }
 
       setSection(data);
+
+      const docIdForSection = data?.doc_id || route.params?.doc_id || DOC_ID;
+      if (docIdForSection.startsWith('act-')) {
+        const docInfo = await DatabaseService.getDocumentById(docIdForSection).catch(() => null);
+        setDocumentInfo(docInfo);
+      } else {
+        setDocumentInfo(null);
+      }
     } catch (error: unknown) {
       console.error('[ReaderScreen] Error loading section:', error);
       if (error instanceof Error) {
@@ -99,14 +124,21 @@ export default function ReaderScreen() {
   const checkBookmark = async () => {
     const chunkId = route.params?.chunk_id;
     if (!chunkId) return;
+    if (docId.startsWith('act-')) {
+      setIsBookmarked(false);
+      return;
+    }
     const bookmarked = await DatabaseService.isBookmarked(chunkId);
     setIsBookmarked(bookmarked);
   };
 
   const checkPinned = async () => {
-    const docId = route.params?.doc_id || DOC_ID;
     const chunkId = route.params?.chunk_id;
     if (!chunkId) return;
+    if (docId.startsWith('act-')) {
+      setIsPinned(false);
+      return;
+    }
     const pinned = await DatabaseService.isPinned(docId, chunkId);
     setIsPinned(pinned);
   };
@@ -114,6 +146,7 @@ export default function ReaderScreen() {
   const toggleBookmark = async () => {
     const chunkId = route.params?.chunk_id;
     if (!chunkId) return;
+    if (docId.startsWith('act-')) return;
 
     if (isBookmarked) {
       await DatabaseService.removeBookmark(DOC_ID, chunkId);
@@ -129,9 +162,9 @@ export default function ReaderScreen() {
   };
 
   const togglePin = async () => {
-    const docId = route.params?.doc_id || DOC_ID;
     const chunkId = route.params?.chunk_id;
     if (!chunkId || !section) return;
+    if (docId.startsWith('act-')) return;
 
     if (isPinned) {
       await DatabaseService.removePinnedItem(docId, chunkId);
@@ -148,18 +181,49 @@ export default function ReaderScreen() {
     }
   };
 
-  const handleViewPDF = () => {
-    const pageMap =
-      (constitutionPageIndex as { sections?: Record<string, number> }).sections ||
-      (constitutionPageIndex as Record<string, number>);
-    const sectionNumber = section?.section_number?.toUpperCase();
-    const mappedPage =
-      sectionNumber && pageMap ? Number(pageMap[sectionNumber]) : undefined;
-    const initialPage = mappedPage && mappedPage > 0 ? mappedPage : undefined;
+  const handleViewPDF = async () => {
+    if (!section) return;
+
+    if (!docId.startsWith('act-')) {
+      const pageMap =
+        (constitutionPageIndex as { sections?: Record<string, number> }).sections ||
+        (constitutionPageIndex as Record<string, number>);
+      const sectionNumber = section?.section_number?.toUpperCase();
+      const mappedPage =
+        sectionNumber && pageMap ? Number(pageMap[sectionNumber]) : undefined;
+      const initialPage = mappedPage && mappedPage > 0 ? mappedPage : undefined;
+
+      navigation.navigate('ActPdfViewer', {
+        actTitle: 'Constitution of the Co-operative Republic of Guyana',
+        pdfFilename: CONSTITUTION_PDF_PATH,
+        initialPage,
+      });
+      return;
+    }
+
+    const docInfo =
+      documentInfo || (await DatabaseService.getDocumentById(docId).catch(() => null));
+    const pdfPath =
+      docInfo?.category && docInfo?.pdf_filename
+        ? `${docInfo.category}/${docInfo.pdf_filename}`
+        : getActPdfPath(docId);
+
+    if (!pdfPath) {
+      Alert.alert('PDF Unavailable', 'This Act does not have a PDF available yet.');
+      return;
+    }
+
+    const initialPage = await DatabaseService.getActPageHint(
+      docId,
+      section.chunk_id,
+      section.text
+    );
+    const actTitle =
+      docInfo?.title || getActMetadataById(docId)?.title || 'Act';
 
     navigation.navigate('ActPdfViewer', {
-      actTitle: 'Constitution of the Co-operative Republic of Guyana',
-      pdfFilename: CONSTITUTION_PDF_PATH,
+      actTitle,
+      pdfFilename: pdfPath,
       initialPage,
     });
   };
@@ -167,7 +231,11 @@ export default function ReaderScreen() {
   const handleShare = async () => {
     if (!section) return;
 
-    const shareContent = `Constitution of Guyana — Article ${section.section_number}\n\n${
+    const docTitle = isAct
+      ? documentInfo?.title || getActMetadataById(docId)?.title || 'Act'
+      : 'Constitution of Guyana';
+    const label = isAct ? 'Section' : 'Article';
+    const shareContent = `${docTitle} - ${label} ${section.section_number}\n\n${
       section.heading ? section.heading + '\n\n' : ''
     }${section.text}`;
 
@@ -209,13 +277,15 @@ export default function ReaderScreen() {
         </TouchableOpacity>
 
         <View style={styles.headerActions}>
-          <TouchableOpacity onPress={togglePin} style={styles.iconButton}>
-            <Ionicons
-              name={isPinned ? 'pin' : 'pin-outline'}
-              size={24}
-              color={isPinned ? colors.accent : colors.text}
-            />
-          </TouchableOpacity>
+          {!isAct && (
+            <TouchableOpacity onPress={togglePin} style={styles.iconButton}>
+              <Ionicons
+                name={isPinned ? 'pin' : 'pin-outline'}
+                size={24}
+                color={isPinned ? colors.accent : colors.text}
+              />
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity onPress={handleViewPDF} style={styles.iconButton}>
             <Ionicons name="document-text-outline" size={24} color={colors.text} />
@@ -225,13 +295,15 @@ export default function ReaderScreen() {
             <Ionicons name="share-outline" size={24} color={colors.text} />
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={toggleBookmark} style={styles.iconButton}>
-            <Ionicons
-              name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
-              size={24}
-              color={colors.primary}
-            />
-          </TouchableOpacity>
+          {!isAct && (
+            <TouchableOpacity onPress={toggleBookmark} style={styles.iconButton}>
+              <Ionicons
+                name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
+                size={24}
+                color={colors.primary}
+              />
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             onPress={() => setShowControls(!showControls)}
@@ -288,12 +360,17 @@ export default function ReaderScreen() {
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
         <View style={styles.sectionHeader}>
+          {isAct && (
+            <Text style={[styles.docTitle, { color: colors.textSecondary }]}>
+              {documentInfo?.title || getActMetadataById(docId)?.title || 'Act'}
+            </Text>
+          )}
           <Text style={[styles.sectionNumber, { color: colors.accent }]}>
-            Article {section.section_number}
+            {isAct ? 'Section' : 'Article'} {section.section_number}
           </Text>
 
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {section.heading || `Article ${section.section_number}`}
+            {section.heading || `${isAct ? 'Section' : 'Article'} ${section.section_number}`}
           </Text>
         </View>
 
@@ -396,6 +473,13 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginBottom: 24,
+  },
+  docTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.8,
+    marginBottom: 6,
   },
   sectionNumber: {
     fontSize: 14,
