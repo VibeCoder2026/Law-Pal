@@ -1,24 +1,43 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { GOOGLE_AI_API_KEY } from '../config/apikey';
+import { AI_PROXY_URL } from '../config/aiProxy';
 import DatabaseService from '../db/database';
 import { APP_CONFIG } from '../constants';
 import { SearchResult, Message } from '../types';
 
 class AIService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
   private requestTimestamps: number[] = [];
 
   constructor() {
-    this.genAI = new GoogleGenerativeAI(GOOGLE_AI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash',
-      generationConfig: {
-        temperature: APP_CONFIG.AI.TEMPERATURE, // Low temperature for factual legal answers
-        topP: APP_CONFIG.AI.TOP_P,
-        topK: APP_CONFIG.AI.TOP_K,
-      }
+    // No-op: AI calls are proxied via server for API key safety.
+  }
+
+  private async callAiProxy(prompt: string, options?: { temperature?: number; topP?: number; topK?: number }): Promise<string> {
+    if (!AI_PROXY_URL) {
+      throw new Error('AI proxy URL not configured');
+    }
+
+    const response = await fetch(AI_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gemini-2.0-flash',
+        prompt,
+        temperature: options?.temperature ?? APP_CONFIG.AI.TEMPERATURE,
+        topP: options?.topP ?? APP_CONFIG.AI.TOP_P,
+        topK: options?.topK ?? APP_CONFIG.AI.TOP_K,
+      }),
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`AI proxy error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const text = data?.text;
+    if (!text || typeof text !== 'string') {
+      throw new Error('AI proxy returned an empty response');
+    }
+    return text;
   }
 
   private canMakeRequest(): boolean {
@@ -79,7 +98,11 @@ class AIService {
 
   private buildAiErrorResponse(message: string, hasResults: boolean): string {
     if (message.includes('API key not valid') || message.includes('API_KEY_INVALID')) {
-      return 'The AI service rejected the API key. Please check the key on EAS (preview) or your local `.env`, then rebuild the app.';
+      return 'The AI service rejected the server API key. Please check the Cloudflare Worker secret and redeploy.';
+    }
+
+    if (message.toLowerCase().includes('proxy')) {
+      return 'The AI proxy is not responding. Please try again in a moment.';
     }
 
     if (message.includes('fetch') || message.includes('network') || message.includes('ENOTFOUND')) {
@@ -134,8 +157,7 @@ Output Format: Just the keywords separated by spaces. No explanation.
 `;
 
     try {
-      const result = await this.model.generateContent(prompt);
-      const keywords = await result.response.text();
+      const keywords = await this.callAiProxy(prompt, { temperature: 0.1, topP: 0.7, topK: 40 });
       return keywords.replace(/\n/g, ' ').trim();
     } catch (error) {
       console.warn('[AIService] Keyword extraction failed, using original query.');
@@ -276,8 +298,8 @@ Output Format: Just the keywords separated by spaces. No explanation.
       return this.buildGreetingResponse();
     }
 
-    if (!GOOGLE_AI_API_KEY || (GOOGLE_AI_API_KEY as string) === 'YOUR_API_KEY_HERE') {
-      return 'Please configure GOOGLE_AI_API_KEY in your `.env` (local) or EAS environment (preview) to use chat.';
+    if (!AI_PROXY_URL) {
+      return 'Please configure EXPO_PUBLIC_AI_PROXY_URL in your `.env` or EAS environment to use chat.';
     }
 
     try {
@@ -423,10 +445,7 @@ Finally, provide 3 short suggested follow-up questions that the user might want 
 
       // 5. Call Gemini API
       try {
-        const result = await this.model.generateContent(systemInstruction);
-        const response = await result.response;
-        const responseText = response.text();
-        return responseText;
+        return await this.callAiProxy(systemInstruction);
       } catch (error: any) {
         const message = String(error?.message || error || '');
         console.error('[AIService] Error generating answer:', error);

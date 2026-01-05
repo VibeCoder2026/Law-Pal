@@ -37,8 +37,7 @@ module.exports = {
       eas: {
         projectId: "90faa7f5-13df-49d9-933c-aff892eda35c"
       },
-      GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY,
-      googleAiApiKey: process.env.GOOGLE_AI_API_KEY || process.env.EXPO_PUBLIC_GOOGLE_AI_API_KEY
+      AI_PROXY_URL: process.env.EXPO_PUBLIC_AI_PROXY_URL || process.env.AI_PROXY_URL
     }
   }
 };

@@ -92,10 +92,11 @@ constitution-reader/
 
 - `tools/` - Parsing and import utilities for legal documents (see `tools/README.md`)
 - `tools/analysis/` - One-off analysis helpers (e.g., header detection, structure checks)
+- `server/ai-proxy/` - Cloudflare Worker that proxies AI requests (keeps API keys off-device)
 
 ## Repository Notes
 
-- API key lives in `.env` (gitignored). Copy `.env.example` and set `GOOGLE_AI_API_KEY`.
+- AI requests go through a Cloudflare Worker. Set `EXPO_PUBLIC_AI_PROXY_URL` in `.env` or EAS.
 - `law_sources/` contains large PDFs and is not tracked; run `node tools/download-legal-pdfs.js` or use Git LFS if you want to publish the assets.
 
 ## Content Import & Versioning

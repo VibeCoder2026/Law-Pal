@@ -1,30 +1,32 @@
-# Law Pal 🇬🇾 - Setup Guide
+# Law Pal GY - Setup Guide
 
 ## Environment Variables Setup
 
-This app requires a Google AI API key to power the AI Legal Assistant feature.
+The AI Legal Assistant now uses a **Cloudflare Worker proxy** so the Gemini API key never ships with the app.
 
-### Step 1: Get Your API Key
+### Step 1: Deploy the AI Proxy (Cloudflare Worker)
 
-1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
-2. Sign in with your Google account
-3. Click "Create API Key"
-4. Copy the generated key
+See `server/ai-proxy/README.md` for full setup steps. Quick summary:
+
+1. Install Wrangler: `npm install -g wrangler`
+2. Login: `wrangler login`
+3. Set secret: `wrangler secret put GOOGLE_AI_API_KEY`
+4. Deploy: `wrangler deploy`
 
 ### Step 2: Create .env File
 
-1. In the project root directory, create a file named `.env`
-2. Add your API key:
+1. In the project root, create a file named `.env`
+2. Add your Worker URL:
 
 ```bash
-GOOGLE_AI_API_KEY=your_actual_api_key_here
+EXPO_PUBLIC_AI_PROXY_URL=https://your-worker-url.workers.dev
 ```
 
 **Important:** Never commit the `.env` file to version control! It's already in `.gitignore`.
 
 ### Step 3: Verify Setup
 
-The app will automatically load the API key from your `.env` file. If the key is missing or invalid, you'll see an error message in the AI Legal Assistant chat.
+If the proxy URL is missing or invalid, the AI chat will show a clear error message.
 
 ## For Other Developers
 
@@ -34,27 +36,21 @@ If you're cloning this repository:
    ```bash
    cp .env.example .env
    ```
-
-2. Edit `.env` and add your own Google AI API key
-
-3. Never share or commit your `.env` file
+2. Edit `.env` and add your Worker URL
 
 ## Security Notes
 
 - ✅ `.env` is gitignored and won't be committed
-- ✅ `src/config/apikey.ts` is gitignored and won't be committed
-- ✅ API keys are loaded at runtime from environment variables
-- ❌ Never hardcode API keys in source files
-- ❌ Never commit `.env` to version control
+- ✅ Gemini API key lives **only** in Cloudflare Worker secrets
+- ✅ Mobile app never ships with the API key
 
 ## Troubleshooting
 
-**"API key not configured" error:**
+**"AI proxy URL not configured" error:**
 - Make sure `.env` exists in the project root
-- Check that `GOOGLE_AI_API_KEY` is set correctly
+- Check that `EXPO_PUBLIC_AI_PROXY_URL` is set correctly
 - Restart the Expo dev server after creating `.env`
 
-**Key still not working:**
-- Verify the key is valid in [Google AI Studio](https://aistudio.google.com/app/apikey)
-- Check for extra spaces or quotes in the `.env` file
-- Make sure you're using the correct key (not a different Google API key)
+**AI proxy returns errors:**
+- Verify the Worker is deployed and reachable
+- Check the Worker secret: `wrangler secret put GOOGLE_AI_API_KEY`

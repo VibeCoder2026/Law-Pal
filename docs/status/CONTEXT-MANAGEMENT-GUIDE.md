@@ -90,9 +90,9 @@ npx expo start
 3. Configure .env
 
 ## Environment Variables
-GOOGLE_AI_API_KEY=your_key
-ANDROID_HOME=path_to_sdk
-```
+  EXPO_PUBLIC_AI_PROXY_URL=https://your-worker-url.workers.dev
+  ANDROID_HOME=path_to_sdk
+  ```
 
 #### 3. **ARCHITECTURE.md** - System Design
 ```markdown

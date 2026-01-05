@@ -414,12 +414,12 @@ const assetPath = `file:///android_asset/law_sources/${pdfFilename}`;
 
 **Should show:**
 ```typescript
-export const GOOGLE_AI_API_KEY = 'YOUR_API_KEY_HERE';
+export const AI_PROXY_URL = 'https://your-worker-url.workers.dev';
 ```
 
 **If missing or placeholder:**
-1. Get key: https://aistudio.google.com/app/apikey
-2. Update `.env` with `GOOGLE_AI_API_KEY=your_actual_api_key_here`
+1. Deploy the AI proxy (`server/ai-proxy/README.md`)
+2. Update `.env` with `EXPO_PUBLIC_AI_PROXY_URL=https://your-worker-url.workers.dev`
 3. Restart Metro (or hot reload if already running)
 
 ---

@@ -4,6 +4,11 @@
 
 Integrate **Google Gemini AI** for intelligent legal search with voice input support. Users can ask questions in natural language and get answers with citations from the Constitution and Acts.
 
+## Current State (2026-01)
+
+- App calls a Cloudflare Worker proxy (`EXPO_PUBLIC_AI_PROXY_URL`)
+- Gemini API key is stored as a Worker secret (`GOOGLE_AI_API_KEY`)
+
 ---
 
 ## Current Implementation (Jan 2026)
@@ -15,7 +20,7 @@ Integrate **Google Gemini AI** for intelligent legal search with voice input sup
 - **Tone routing:** Warm/supportive (domestic), formal/professional (criminal), friendly/brief (rights)
 - **Citations:** Always `lawpal://open` deep links
 - **Feedback:** Stored in `ai_feedback` (not yet used for prompt injection)
-- **API key:** `.env` (`GOOGLE_AI_API_KEY`)
+- **Proxy URL:** `.env` (`EXPO_PUBLIC_AI_PROXY_URL`)
 
 **Note:** The rest of this document includes roadmap items and alternative architectures that are **not** currently implemented (voice input, backend proxy, vector DB, etc.).
 
@@ -384,7 +389,7 @@ export default function AIAssistantScreen() {
 
 **File: `.env`**
 ```bash
-GOOGLE_AI_API_KEY=your_gemini_api_key_here
+EXPO_PUBLIC_AI_PROXY_URL=https://your-worker-url.workers.dev
 ```
 
 **Get API Key:**

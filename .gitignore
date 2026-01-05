@@ -46,8 +46,8 @@ yarn-error.*
 /ios
 /android
 
-# Secrets
-src/config/apikey.ts
+# Cloudflare Worker
+server/ai-proxy/.wrangler/
 
 # Large assets and logs
 law_sources/
