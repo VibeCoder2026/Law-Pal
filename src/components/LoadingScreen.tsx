@@ -8,8 +8,14 @@ const LEGAL_FACTS = [
   "Guyana's Constitution was significantly reformed in 1980 and 2001.",
   "The Preamble recognizes the 'Co-operative Republic' status of Guyana.",
   "Fundamental rights are protected under Title 1 of the Constitution.",
-  "The Golden Arrowhead was adopted on May 26, 1966.",
-  "There are 65 members in the National Assembly of Guyana."
+  "The Golden Arrowhead flag was adopted on May 26, 1966.",
+  "There are 65 members in the National Assembly of Guyana.",
+  "Guyana has over 450 Acts of Parliament in its legal framework.",
+  "The Criminal Law (Offences) Act covers most criminal offences.",
+  "Marriage in Guyana is governed by the Marriage Act Cap 45:01.",
+  "The Motor Vehicles Act regulates all road traffic in Guyana.",
+  "Land ownership disputes fall under the Title to Land Act.",
+  "Employment rights are protected by the Labour Act Cap 98:01.",
 ];
 
 export default function LoadingScreen() {
@@ -65,7 +71,7 @@ export default function LoadingScreen() {
       </View>
       
       <Text style={[styles.footer, { color: colors.textSecondary }]}>
-        POWERED BY THE CONSTITUTION OF GUYANA
+        YOUR LEGAL REFERENCE FOR GUYANA
       </Text>
     </View>
   );

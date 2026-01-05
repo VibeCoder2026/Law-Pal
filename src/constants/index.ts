@@ -94,5 +94,5 @@ export const CONSTITUTION_PDF_PATH =
 /**
  * Feedback channels (set these to your own values)
  */
-export const FEEDBACK_WHATSAPP_NUMBER = '+5926170517'; // e.g. 5926001234
+export const FEEDBACK_GOOGLE_FORM_URL = 'YOUR_GOOGLE_FORM_URL'; // Create a Google Form and paste the prefilled URL here
 export const FEEDBACK_EMAIL = 'YOUR_EMAIL'; // e.g. you@example.com

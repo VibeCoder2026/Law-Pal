@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../types';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as Sharing from 'expo-sharing';
 import pdfUrlData from '../assets/acts-pdf-urls.json';
 import { addRecentItem, getActLastPage, setActReadingProgress } from '../utils/recentItems';
 import { APP_CONFIG } from '../constants';
@@ -51,6 +52,7 @@ export default function ActPdfViewerScreen() {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSavingToDevice, setIsSavingToDevice] = useState(false);
   const lastSavedPageRef = useRef<number | null>(null);
 
   // Check if PDF viewer is available
@@ -202,6 +204,44 @@ export default function ActPdfViewerScreen() {
     }
   };
 
+  const handleSaveToDevice = async () => {
+    if (!pdfUri) {
+      Alert.alert('PDF Not Available', 'Download the PDF first before saving to device.');
+      return;
+    }
+
+    setIsSavingToDevice(true);
+
+    try {
+      // Check if sharing is available
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert('Not Supported', 'Saving files is not supported on this device.');
+        return;
+      }
+
+      // Extract filename from pdfKey (e.g., "criminal-law/Act_123.pdf" -> "Act_123.pdf")
+      const filename = pdfKey.split('/').pop() || 'document.pdf';
+
+      // Use expo-sharing to let user save to their preferred location
+      await Sharing.shareAsync(pdfUri, {
+        mimeType: 'application/pdf',
+        dialogTitle: `Save ${filename}`,
+        UTI: 'com.adobe.pdf',
+      });
+
+      Alert.alert(
+        'Save Complete',
+        'Use the share menu to save to Downloads, Files, or any other app.'
+      );
+    } catch (saveError) {
+      console.error('[ActPdfViewer] Save to device failed:', saveError);
+      Alert.alert('Save Failed', 'Unable to save the file. Please try again.');
+    } finally {
+      setIsSavingToDevice(false);
+    }
+  };
+
   const pdfSource = pdfUri ? { uri: pdfUri, cache: false } : null;
 
   console.log('[ActPdfViewer] PDF available:', isPdfAvailable);
@@ -232,6 +272,19 @@ export default function ActPdfViewerScreen() {
             </Text>
           )}
         </View>
+        {pdfUri && (
+          <TouchableOpacity
+            onPress={handleSaveToDevice}
+            style={styles.saveButton}
+            disabled={isSavingToDevice}
+          >
+            {isSavingToDevice ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Ionicons name="share-outline" size={22} color={colors.primary} />
+            )}
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* PDF Viewer or Placeholder */}
@@ -384,6 +437,10 @@ const styles = StyleSheet.create({
   },
   headerText: {
     flex: 1,
+  },
+  saveButton: {
+    padding: 8,
+    marginLeft: 8,
   },
   title: {
     fontSize: 18,

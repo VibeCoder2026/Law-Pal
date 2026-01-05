@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
-  FlatList,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList } from '../types';
 import DatabaseService from '../db/database';
@@ -28,35 +28,22 @@ interface PinnedItem {
   display_order: number;
 }
 
-type PinnedListItem = PinnedItem & { listKey: string };
-
-interface OptionItem {
-  key: string;
-  title: string;
-  description: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  onPress: () => void;
-}
-
-type OptionListItem = OptionItem & { listKey: string };
+const QUICK_ACCESS_COLLAPSED_KEY = 'quick_access_collapsed';
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { colors, isDarkMode, toggleDarkMode } = useTheme();
   const [pinnedItems, setPinnedItems] = useState<PinnedItem[]>([]);
-  const pinnedListRef = useRef<FlatList<PinnedListItem>>(null);
-  const pinnedSectionWidthRef = useRef(0);
-  const isPinnedResettingRef = useRef(false);
-  const hasPinnedCenteredRef = useRef(false);
-  const optionsListRef = useRef<FlatList<OptionListItem>>(null);
-  const optionsSectionHeightRef = useRef(0);
-  const isResettingRef = useRef(false);
-  const hasCenteredRef = useRef(false);
+  const [isQuickAccessCollapsed, setIsQuickAccessCollapsed] = useState(false);
 
   const loadPinnedItems = useCallback(async () => {
     try {
       const items = await DatabaseService.getAllPinnedItems();
       setPinnedItems(items);
+
+      // Load collapsed state
+      const collapsed = await AsyncStorage.getItem(QUICK_ACCESS_COLLAPSED_KEY);
+      setIsQuickAccessCollapsed(collapsed === 'true');
     } catch (error) {
       console.error('[HomeScreen] Failed to load pinned items:', error);
     }
@@ -68,14 +55,11 @@ export default function HomeScreen() {
     }, [loadPinnedItems])
   );
 
-  useEffect(() => {
-    hasCenteredRef.current = false;
-    optionsSectionHeightRef.current = 0;
-    isResettingRef.current = false;
-    hasPinnedCenteredRef.current = false;
-    pinnedSectionWidthRef.current = 0;
-    isPinnedResettingRef.current = false;
-  }, [pinnedItems.length]);
+  const toggleQuickAccessCollapsed = useCallback(async () => {
+    const newState = !isQuickAccessCollapsed;
+    setIsQuickAccessCollapsed(newState);
+    await AsyncStorage.setItem(QUICK_ACCESS_COLLAPSED_KEY, newState.toString());
+  }, [isQuickAccessCollapsed]);
 
   const handlePinnedItemPress = (item: PinnedItem) => {
     if (item.item_type === 'constitution') {
@@ -84,20 +68,16 @@ export default function HomeScreen() {
         chunk_id: item.chunk_id,
       });
     } else if (item.item_type === 'act') {
-      // Navigate to Act PDF viewer
       navigation.navigate('ActPdfViewer', {
         actTitle: item.title,
-        pdfFilename: item.chunk_id, // For Acts, chunk_id stores the PDF filename
+        pdfFilename: item.chunk_id,
       });
     }
   };
 
   const handleUnpin = async (item: PinnedItem, event: any) => {
-    // Stop propagation to prevent navigation
     event.stopPropagation();
-
     await DatabaseService.removePinnedItem(item.doc_id, item.chunk_id);
-    // Reload pinned items after unpinning
     loadPinnedItems();
   };
 
@@ -108,173 +88,43 @@ export default function HomeScreen() {
     });
   }, [navigation]);
 
-  const options = useMemo<OptionItem[]>(() => [
+  const options = useMemo(() => [
     {
       key: 'constitution',
       title: 'Browse Constitution',
       description: 'View the complete Constitution PDF document',
-      icon: 'document-text',
+      icon: 'document-text' as const,
       onPress: handleBrowseConstitution,
     },
     {
       key: 'acts',
       title: 'Acts & Statutes',
       description: 'Browse legislative acts and statutory laws',
-      icon: 'hammer',
+      icon: 'hammer' as const,
       onPress: () => navigation.navigate('ActsTiers'),
     },
     {
       key: 'recent',
       title: 'Recently opened',
       description: 'Reopen acts you viewed most recently',
-      icon: 'time',
+      icon: 'time' as const,
       onPress: () => navigation.navigate('RecentItems'),
     },
     {
       key: 'chat',
       title: 'AI Legal Assistant',
       description: "Ask questions about Guyana's laws and get instant answers",
-      icon: 'chatbubbles',
+      icon: 'chatbubbles' as const,
       onPress: () => navigation.navigate('Chat'),
     },
     {
       key: 'feedback',
       title: 'Send Feedback',
       description: 'Tell us what to improve or request new features',
-      icon: 'chatbox-ellipses',
+      icon: 'chatbox-ellipses' as const,
       onPress: () => navigation.navigate('Feedback'),
     },
   ], [handleBrowseConstitution, navigation]);
-
-  const optionsLoopData = useMemo<OptionListItem[]>(() => {
-    const tripled: OptionListItem[] = [];
-    for (let i = 0; i < 3; i += 1) {
-      for (const option of options) {
-        tripled.push({ ...option, listKey: `${option.key}-${i}` });
-      }
-    }
-    return tripled;
-  }, [options]);
-
-  const pinnedLoopData = useMemo<PinnedListItem[]>(() => {
-    const tripled: PinnedListItem[] = [];
-    for (let i = 0; i < 3; i += 1) {
-      for (const item of pinnedItems) {
-        tripled.push({ ...item, listKey: `${item.id}-${i}` });
-      }
-    }
-    return tripled;
-  }, [pinnedItems]);
-
-  const handleOptionsContentSizeChange = useCallback((_: number, height: number) => {
-    if (height <= 0) return;
-    const sectionHeight = height / 3;
-    optionsSectionHeightRef.current = sectionHeight;
-
-    if (!hasCenteredRef.current) {
-      hasCenteredRef.current = true;
-      requestAnimationFrame(() => {
-        optionsListRef.current?.scrollToOffset({
-          offset: sectionHeight,
-          animated: false,
-        });
-      });
-    }
-  }, []);
-
-  const handlePinnedContentSizeChange = useCallback((width: number) => {
-    if (width <= 0) return;
-    const sectionWidth = width / 3;
-    pinnedSectionWidthRef.current = sectionWidth;
-
-    if (!hasPinnedCenteredRef.current) {
-      hasPinnedCenteredRef.current = true;
-      requestAnimationFrame(() => {
-        pinnedListRef.current?.scrollToOffset({
-          offset: sectionWidth,
-          animated: false,
-        });
-      });
-    }
-  }, []);
-
-  const handleOptionsScroll = useCallback((event: any) => {
-    if (isResettingRef.current) return;
-    const sectionHeight = optionsSectionHeightRef.current;
-    if (!sectionHeight) return;
-
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const threshold = sectionHeight * 0.2;
-
-    if (offsetY <= threshold) {
-      isResettingRef.current = true;
-      optionsListRef.current?.scrollToOffset({
-        offset: offsetY + sectionHeight,
-        animated: false,
-      });
-      requestAnimationFrame(() => {
-        isResettingRef.current = false;
-      });
-    } else if (offsetY >= sectionHeight * 2 - threshold) {
-      isResettingRef.current = true;
-      optionsListRef.current?.scrollToOffset({
-        offset: offsetY - sectionHeight,
-        animated: false,
-      });
-      requestAnimationFrame(() => {
-        isResettingRef.current = false;
-      });
-    }
-  }, []);
-
-  const handlePinnedScroll = useCallback((event: any) => {
-    if (isPinnedResettingRef.current) return;
-    const sectionWidth = pinnedSectionWidthRef.current;
-    if (!sectionWidth) return;
-
-    const offsetX = event.nativeEvent.contentOffset.x;
-    const threshold = sectionWidth * 0.2;
-
-    if (offsetX <= threshold) {
-      isPinnedResettingRef.current = true;
-      pinnedListRef.current?.scrollToOffset({
-        offset: offsetX + sectionWidth,
-        animated: false,
-      });
-      requestAnimationFrame(() => {
-        isPinnedResettingRef.current = false;
-      });
-    } else if (offsetX >= sectionWidth * 2 - threshold) {
-      isPinnedResettingRef.current = true;
-      pinnedListRef.current?.scrollToOffset({
-        offset: offsetX - sectionWidth,
-        animated: false,
-      });
-      requestAnimationFrame(() => {
-        isPinnedResettingRef.current = false;
-      });
-    }
-  }, []);
-
-  const renderOption = useCallback(({ item }: { item: OptionListItem }) => (
-    <TouchableOpacity
-      style={[styles.categoryCard, { backgroundColor: colors.surface }]}
-      onPress={item.onPress}
-      activeOpacity={0.7}
-    >
-      <View style={styles.categoryHeader}>
-        <Ionicons name={item.icon} size={28} color={colors.primary} />
-        <Text style={[styles.categoryTitle, { color: colors.text }]}>
-          {item.title}
-        </Text>
-      </View>
-      <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
-        {item.description}
-      </Text>
-    </TouchableOpacity>
-  ), [colors.primary, colors.surface, colors.text, colors.textSecondary]);
-
-  const useLoopingOptions = pinnedItems.length > 0;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -283,7 +133,11 @@ export default function HomeScreen() {
         backgroundColor={colors.background}
       />
 
-      <View style={styles.content}>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <View>
             <Text style={[styles.title, { color: colors.text }]}>
@@ -304,107 +158,94 @@ export default function HomeScreen() {
 
         {pinnedItems.length > 0 && (
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              onPress={toggleQuickAccessCollapsed}
+              activeOpacity={0.7}
+            >
               <Ionicons name="pin" size={20} color={colors.primary} />
-              <Text style={[styles.sectionTitle, { color: colors.text, marginLeft: 8, marginBottom: 0 }]}>
-                Quick Access
+              <Text style={[styles.sectionTitle, { color: colors.text, marginLeft: 8, marginBottom: 0, flex: 1 }]}>
+                Quick Access ({pinnedItems.length})
               </Text>
-            </View>
-            <FlatList
-              ref={pinnedListRef}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.pinnedContainer}
-              data={pinnedLoopData}
-              keyExtractor={(item) => item.listKey}
-              onScroll={handlePinnedScroll}
-              onContentSizeChange={handlePinnedContentSizeChange}
-              scrollEventThrottle={16}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[styles.pinnedCard, { backgroundColor: colors.surface }]}
-                  onPress={() => handlePinnedItemPress(item)}
-                  activeOpacity={0.7}
-                >
+              <Ionicons
+                name={isQuickAccessCollapsed ? 'chevron-down' : 'chevron-up'}
+                size={20}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+
+            {!isQuickAccessCollapsed && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.pinnedContainer}
+              >
+                {pinnedItems.map((item) => (
                   <TouchableOpacity
-                    style={styles.unpinButton}
-                    onPress={(e) => handleUnpin(item, e)}
+                    key={item.id}
+                    style={[styles.pinnedCard, { backgroundColor: colors.surface }]}
+                    onPress={() => handlePinnedItemPress(item)}
+                    activeOpacity={0.7}
                   >
-                    <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
-                  </TouchableOpacity>
-                  <View style={[styles.pinnedIconContainer, { backgroundColor: colors.primary + '15' }]}>
-                    <Ionicons
-                      name={item.item_type === 'constitution' ? 'document-text' : 'hammer'}
-                      size={24}
-                      color={colors.primary}
-                    />
-                  </View>
-                  <Text style={[styles.pinnedTitle, { color: colors.text }]} numberOfLines={2}>
-                    {item.title}
-                  </Text>
-                  {item.subtitle && (
-                    <Text style={[styles.pinnedSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
-                      {item.subtitle}
+                    <TouchableOpacity
+                      style={styles.unpinButton}
+                      onPress={(e) => handleUnpin(item, e)}
+                    >
+                      <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
+                    </TouchableOpacity>
+                    <View style={[styles.pinnedIconContainer, { backgroundColor: colors.primary + '15' }]}>
+                      <Ionicons
+                        name={item.item_type === 'constitution' ? 'document-text' : 'hammer'}
+                        size={24}
+                        color={colors.primary}
+                      />
+                    </View>
+                    <Text style={[styles.pinnedTitle, { color: colors.text }]} numberOfLines={2}>
+                      {item.title}
                     </Text>
-                  )}
-                </TouchableOpacity>
-              )}
-            />
+                    {item.subtitle && (
+                      <Text style={[styles.pinnedSubtitle, { color: colors.textSecondary }]} numberOfLines={1}>
+                        {item.subtitle}
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            )}
           </View>
         )}
 
-        <View style={[styles.section, styles.optionsSection]}>
+        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
             Options
           </Text>
 
-          {useLoopingOptions ? (
-            <FlatList
-              ref={optionsListRef}
-              style={styles.optionsScroll}
-              contentContainerStyle={styles.optionsContent}
-              showsVerticalScrollIndicator={false}
-              data={optionsLoopData}
-              keyExtractor={(item) => item.listKey}
-              renderItem={renderOption}
-              onScroll={handleOptionsScroll}
-              onContentSizeChange={handleOptionsContentSizeChange}
-              scrollEventThrottle={16}
-            />
-          ) : (
-            <ScrollView
-              style={styles.optionsScroll}
-              contentContainerStyle={styles.optionsContent}
-              showsVerticalScrollIndicator={false}
+          {options.map((option) => (
+            <TouchableOpacity
+              key={option.key}
+              style={[styles.categoryCard, { backgroundColor: colors.surface }]}
+              onPress={option.onPress}
+              activeOpacity={0.7}
             >
-              {options.map((option) => (
-                <TouchableOpacity
-                  key={option.key}
-                  style={[styles.categoryCard, { backgroundColor: colors.surface }]}
-                  onPress={option.onPress}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.categoryHeader}>
-                    <Ionicons name={option.icon} size={28} color={colors.primary} />
-                    <Text style={[styles.categoryTitle, { color: colors.text }]}>
-                      {option.title}
-                    </Text>
-                  </View>
-                  <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
-                    {option.description}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          )}
+              <View style={styles.categoryHeader}>
+                <Ionicons name={option.icon} size={28} color={colors.primary} />
+                <Text style={[styles.categoryTitle, { color: colors.text }]}>
+                  {option.title}
+                </Text>
+              </View>
+              <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
+                {option.description}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
-      </View>
 
-      <View style={[styles.disclaimerSection, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
-        <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
-          <Text style={{ fontWeight: 'bold' }}>Disclaimer:</Text> This app is for informational purposes only and does not constitute official legal advice. Law Pal 🇬🇾 is not affiliated with the Government of Guyana. Always verify with official gazetted documents and consult a legal professional for serious matters.
-        </Text>
-      </View>
+        <View style={[styles.disclaimerSection, { borderTopColor: colors.border }]}>
+          <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
+            <Text style={{ fontWeight: 'bold' }}>Disclaimer:</Text> This app is for informational purposes only and does not constitute official legal advice. Law Pal 🇬🇾 is not affiliated with the Government of Guyana. Always verify with official gazetted documents and consult a legal professional for serious matters.
+          </Text>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -413,9 +254,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
-    minHeight: 0,
+  },
+  scrollContent: {
+    paddingBottom: 30,
   },
   header: {
     flexDirection: 'row',
@@ -437,23 +280,12 @@ const styles = StyleSheet.create({
   },
   section: {
     paddingTop: 10,
-    paddingBottom: 20,
-  },
-  optionsSection: {
-    flex: 1,
-    minHeight: 0,
-  },
-  optionsScroll: {
-    flex: 1,
-    minHeight: 0,
-  },
-  optionsContent: {
-    paddingBottom: 20,
+    paddingBottom: 10,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingLeft: 20,
+    paddingHorizontal: 20,
     marginBottom: 15,
   },
   sectionTitle: {
@@ -528,10 +360,10 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   disclaimerSection: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    marginHorizontal: 20,
+    paddingTop: 20,
+    marginTop: 10,
     borderTopWidth: 1,
-    opacity: 0.9,
   },
   disclaimerText: {
     fontSize: 11,

@@ -396,6 +396,7 @@ GOOGLE_AI_API_KEY=your_gemini_api_key_here
 ### Phase 5: Add to Navigation
 
 **Update: `src/navigation/AppNavigator.tsx`**
+{% raw %}
 ```typescript
 import AIAssistantScreen from '../screens/AIAssistantScreen';
 
@@ -410,6 +411,7 @@ import AIAssistantScreen from '../screens/AIAssistantScreen';
   }}
 />
 ```
+{% endraw %}
 
 ---
 
