@@ -50,6 +50,8 @@ function ensureAgpVersion(content, insertIfMissing) {
   );
 }
 
+console.log(`[ensure-agp] Enforcing AGP ${AGP_VERSION}`);
+
 const failures = [];
 
 targets.forEach((target) => {

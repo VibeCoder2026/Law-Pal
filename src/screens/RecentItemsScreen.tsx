@@ -12,6 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { RootStackParamList, RecentItem, ActReadingProgress } from '../types';
+import { APP_CONFIG } from '../constants';
 import { getRecentItems, getActProgressMap, clearRecentItems } from '../utils/recentItems';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'RecentItems'>;
@@ -25,8 +26,9 @@ export default function RecentItemsScreen() {
   const loadRecentItems = useCallback(async () => {
     try {
       const items = await getRecentItems();
-      setRecentItems(items);
-      if (items.length > 0) {
+      const limitedItems = items.slice(0, APP_CONFIG.UI.RECENT_ITEMS_LIMIT);
+      setRecentItems(limitedItems);
+      if (limitedItems.length > 0) {
         const progressMap = await getActProgressMap();
         setRecentProgress(progressMap);
       }

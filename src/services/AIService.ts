@@ -38,6 +38,80 @@ class AIService {
     return true;
   }
 
+  private isGreeting(query: string): boolean {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return true;
+
+    const greetings = [
+      'hi',
+      'hey',
+      'hello',
+      'yo',
+      'sup',
+      'hiya',
+      'good morning',
+      'good afternoon',
+      'good evening',
+      "what's up",
+      'whats up',
+      'how are you',
+    ];
+
+    return greetings.some((term) =>
+      normalized === term || normalized.startsWith(`${term} `)
+    );
+  }
+
+  private buildGreetingResponse(): string {
+    const suggestions = [
+      'What are my rights if I am arrested?',
+      'How do I apply for a protection order?',
+      'What does the Constitution say about freedom of speech?',
+    ];
+
+    return [
+      "Hi! I can help with Guyana's Constitution and Acts.",
+      'Tell me your situation or ask about a specific law.',
+      '',
+      '[SUGGESTIONS] ' + JSON.stringify(suggestions),
+    ].join('\n');
+  }
+
+  private buildAiErrorResponse(message: string, hasResults: boolean): string {
+    if (message.includes('API key not valid') || message.includes('API_KEY_INVALID')) {
+      return 'The AI service rejected the API key. Please check the key on EAS (preview) or your local `.env`, then rebuild the app.';
+    }
+
+    if (message.includes('fetch') || message.includes('network') || message.includes('ENOTFOUND')) {
+      return 'I could not reach the AI service. Please check your internet connection and try again.';
+    }
+
+    if (hasResults) {
+      return 'I found related laws but could not generate a summary right now. Try again in a moment.';
+    }
+
+    return 'Sorry, I encountered an error while processing your request. Please try again later.';
+  }
+
+  private buildFallbackResultsResponse(results: SearchResult[]): string {
+    const items = results.slice(0, 5).map((section, index) => {
+      const capInfo = section.chapter ? `(Cap. ${section.chapter})` : '';
+      const docTitle = section.doc_type === 'act'
+        ? `${section.doc_title} ${capInfo}`.trim()
+        : section.doc_title;
+      const title = section.heading ? `${section.section_number} - ${section.heading}` : section.section_number;
+      const link = `[Source ${index + 1}](lawpal://open?docId=${section.doc_id}&chunkId=${section.chunk_id})`;
+      return `- ${docTitle} | Section ${title} ${link}`;
+    });
+
+    return [
+      "I couldn't generate a summary right now, but here are the most relevant sections I found:",
+      items.join('\n'),
+      '',
+      'If you want, ask a more specific question and I can try again.',
+    ].join('\n');
+  }
+
   /**
    * Expands the user's natural language query into specific legal keywords.
    * Considers history to resolve references (e.g. "what about my kids?" after "how to divorce?")
@@ -198,8 +272,12 @@ Output Format: Just the keywords separated by spaces. No explanation.
    * Generates an answer to the user's query using the Constitution and Acts as context.
    */
   async generateAnswer(query: string, history: Message[] = []): Promise<string> {
+    if (this.isGreeting(query)) {
+      return this.buildGreetingResponse();
+    }
+
     if (!GOOGLE_AI_API_KEY || (GOOGLE_AI_API_KEY as string) === 'YOUR_API_KEY_HERE') {
-      return "Please configure your Google AI API key in src/config/apikey.ts to use the chat feature.";
+      return 'Please configure GOOGLE_AI_API_KEY in your `.env` (local) or EAS environment (preview) to use chat.';
     }
 
     try {
@@ -342,15 +420,26 @@ Finally, provide 3 short suggested follow-up questions that the user might want 
 `;
 
       // 5. Call Gemini API
-      const result = await this.model.generateContent(systemInstruction);
-      const response = await result.response;
-      const responseText = response.text();
-
-      return responseText;
-
+      try {
+        const result = await this.model.generateContent(systemInstruction);
+        const response = await result.response;
+        const responseText = response.text();
+        return responseText;
+      } catch (error: any) {
+        const message = String(error?.message || error || '');
+        console.error('[AIService] Error generating answer:', error);
+        if (topResults.length > 0) {
+          return [
+            this.buildAiErrorResponse(message, true),
+            '',
+            this.buildFallbackResultsResponse(topResults),
+          ].join('\n');
+        }
+        return this.buildAiErrorResponse(message, false);
+      }
     } catch (error) {
       console.error('[AIService] Error generating answer:', error);
-      return "Sorry, I encountered an error while processing your request. Please check your internet connection or try again later.";
+      return 'Sorry, I encountered an error while processing your request. Please try again later.';
     }
   }
 
