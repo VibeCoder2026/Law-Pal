@@ -190,7 +190,7 @@ The 15% in "Other" represents genuinely specialized/technical legislation that d
 
 ## Implementation Files
 
-- **Script:** `tools/create-tiered-groups.js`
+- **Script:** `tools/import/create-tiered-groups.js`
 - **Output:** `law_sources/tiered-catalog.json`
 - **Original catalog:** `law_sources/catalog.json`
 
@@ -199,7 +199,7 @@ The 15% in "Other" represents genuinely specialized/technical legislation that d
 Run the tiered grouping script:
 ```bash
 cd tools
-node create-tiered-groups.js
+node import/create-tiered-groups.js
 ```
 
 This generates `law_sources/tiered-catalog.json` with the complete tiered structure ready for database import.

@@ -10,9 +10,9 @@ You had a 12.1 MB PDF of Guyana's Constitution that was too large to upload to C
 
 Three Node.js scripts to process the Constitution PDF:
 
-- **`parse-constitution.js`** - Original parser (basic implementation)
-- **`parse-constitution-v2.js`** - Improved parser (✅ recommended)
-- **`inspect-pdf.js`** - PDF analysis tool
+- **`tools/parse/parse-constitution.js`** - Original parser (basic implementation)
+- **`tools/parse/parse-constitution-v2.js`** - Improved parser (✅ recommended)
+- **`tools/inspect/inspect-pdf.js`** - PDF analysis tool
 
 ### 2. Package Configuration
 
@@ -98,7 +98,7 @@ From `npm run inspect`:
 
 ## Customizing the Parser
 
-If you need to adjust the parsing logic, edit `parse-constitution-v2.js`:
+If you need to adjust the parsing logic, edit `tools/parse/parse-constitution-v2.js`:
 
 ```javascript
 // Line ~50: Adjust article pattern matching

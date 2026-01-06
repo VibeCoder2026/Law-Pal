@@ -14,16 +14,16 @@ Successfully integrated 459 Acts & Statutes into the Guyana Constitution Reader 
 ### 1. PDF Import Infrastructure
 
 #### Files Created:
-- **[tools/import-acts.js](../../tools/import-acts.js)** - Main import script
+- **[tools/import/import-acts.js](../../tools/import/import-acts.js)** - Main import script
   - Extracts text from all Act PDFs using pdf-parse library
   - Parses sections with intelligent filtering for TOC and schedules
   - Generates database-ready JSON with metadata and sections
 
-- **[tools/inspect-act.js](../../tools/inspect-act.js)** - Debug/analysis tool
+- **[tools/inspect/inspect-act.js](../../tools/inspect/inspect-act.js)** - Debug/analysis tool
   - Inspects individual Act PDFs to understand structure
   - Shows section patterns and statistics
 
-- **[tools/test-import-acts.js](../../tools/test-import-acts.js)** - Testing script
+- **[tools/import/test-import-acts.js](../../tools/import/test-import-acts.js)** - Testing script
   - Tests import on 5 sample Acts to verify parsing logic
 
 #### Parsing Logic:
@@ -224,7 +224,7 @@ The 13 tiers organize Acts by relevance to everyday users:
 └─────────────────────────────────────────────────────────────┘
                           ↓
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. Import Script (tools/import-acts.js)                     │
+│ 2. Import Script (tools/import/import-acts.js)                     │
 │    - Extracts text from PDFs                                │
 │    - Parses sections with filtering                         │
 │    - Generates acts-import.json (35MB)                      │
@@ -327,9 +327,9 @@ constitution-reader/
 │   └── types/
 │       └── index.ts                        ← Added route types
 ├── tools/
-│   ├── import-acts.js                      ← NEW: Main import script
-│   ├── inspect-act.js                      ← NEW: PDF analyzer
-│   └── test-import-acts.js                 ← NEW: Test script
+│   ├── import/import-acts.js                      ← NEW: Main import script
+│   ├── inspect/inspect-act.js                      ← NEW: PDF analyzer
+│   └── import/test-import-acts.js                 ← NEW: Test script
 ├── law_sources/
 │   ├── acts/ (5 PDFs)
 │   ├── administrative-public/ (16 PDFs)

@@ -2,6 +2,15 @@
 
 This directory contains tools for downloading and parsing Guyana's legal documents.
 
+## Folder Map
+
+- `analysis/` - One-off analysis checks and QA scripts
+- `download/` - Scrapers and bulk PDF downloaders
+- `import/` - Acts import, URL mapping, and chunking helpers
+- `inspect/` - PDF inspection utilities
+- `parse/` - Constitution parsing and extraction scripts
+- `output/` - Generated reference outputs (samples, reports)
+
 ## Setup
 
 1. Install dependencies:
@@ -59,7 +68,7 @@ The generated JSON follows this structure:
 
 ## Customizing the Parser
 
-If the automatic parsing doesn't work perfectly for your PDF structure, you can modify `parse-constitution.js`:
+If the automatic parsing doesn't work perfectly for your PDF structure, you can modify `tools/parse/parse-constitution.js`:
 
 1. Adjust the regex patterns in `extractSections()` to match your PDF's structure
 2. Change how headings are extracted
@@ -76,7 +85,7 @@ npm install puppeteer
 ### 2. Run the Downloader
 
 ```bash
-node tools/download-legal-pdfs.js
+node tools/download/download-legal-pdfs.js
 ```
 
 This will:
@@ -90,7 +99,7 @@ This will:
 If you want the app to download PDFs on demand instead of bundling them, generate the URL map:
 
 ```bash
-node tools/build-pdf-url-map.js
+node tools/import/build-pdf-url-map.js
 ```
 
 This outputs `src/assets/acts-pdf-urls.json`, mapping `category/filename.pdf` to the source URL.
@@ -102,7 +111,7 @@ This outputs `src/assets/acts-pdf-urls.json`, mapping `category/filename.pdf` to
 Generates a map of Constitution article numbers to PDF page numbers so the reader can jump to the correct page.
 
 ```bash
-python tools/build-constitution-page-index.py
+python tools/parse/build-constitution-page-index.py
 ```
 
 **Output:** `src/assets/constitution-page-index.json`
@@ -115,29 +124,30 @@ python tools/build-constitution-page-index.py
 
 ```
 law_sources/
-├── constitutional-electoral/     # Constitution, Elections, Parliament
-├── criminal-justice/             # Criminal Law, Police, Courts
-├── civil-law/                    # Contracts, Property, Land
-├── commercial-business/          # Companies, Trade, Banking
-├── labor-employment/             # Labor laws, Unions, Wages
-├── tax-revenue/                  # Taxation, Customs
-├── family-social/                # Marriage, Adoption, Family
-├── administrative-public/        # Public Service, Commissions
-├── environment-resources/        # Environment, Forestry, Mining
-├── health-welfare/               # Health, Medical, Pharmacy
-├── education/                    # Schools, Universities
-├── transport-infrastructure/     # Transport, Roads, Aviation
-├── finance-banking/              # Banking, Financial Services
-├── media-communications/         # Broadcasting, Telecommunications
-├── agriculture/                  # Farming, Livestock, Veterinary
-├── housing-development/          # Housing, Construction, Planning
-├── energy-utilities/             # Energy, Electricity, Water
-├── immigration-citizenship/      # Immigration, Passports, Citizenship
-├── indigenous-amerindian/        # Indigenous/Amerindian Rights
-├── consumer-protection/          # Consumer Protection, Standards
-├── uncategorized/                # Other documents
-└── catalog.json                  # Complete document catalog
+|-- constitutional-electoral/     # Constitution, Elections, Parliament
+|-- criminal-justice/             # Criminal Law, Police, Courts
+|-- civil-law/                    # Contracts, Property, Land
+|-- commercial-business/          # Companies, Trade, Banking
+|-- labor-employment/             # Labor laws, Unions, Wages
+|-- tax-revenue/                  # Taxation, Customs
+|-- family-social/                # Marriage, Adoption, Family
+|-- administrative-public/        # Public Service, Commissions
+|-- environment-resources/        # Environment, Forestry, Mining
+|-- health-welfare/               # Health, Medical, Pharmacy
+|-- education/                    # Schools, Universities
+|-- transport-infrastructure/     # Transport, Roads, Aviation
+|-- finance-banking/              # Banking, Financial Services
+|-- media-communications/         # Broadcasting, Telecommunications
+|-- agriculture/                  # Farming, Livestock, Veterinary
+|-- housing-development/          # Housing, Construction, Planning
+|-- energy-utilities/             # Energy, Electricity, Water
+|-- immigration-citizenship/      # Immigration, Passports, Citizenship
+|-- indigenous-amerindian/        # Indigenous/Amerindian Rights
+|-- consumer-protection/          # Consumer Protection, Standards
+|-- uncategorized/                # Other documents
+`-- catalog.json                  # Complete document catalog
 ```
+
 
 ## Troubleshooting
 

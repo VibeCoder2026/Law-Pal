@@ -90,14 +90,19 @@ constitution-reader/
 
 ## Scripts & Tools
 
-- `tools/` - Parsing and import utilities for legal documents (see `tools/README.md`)
+- `tools/` - Parsing, download, and import utilities (see `tools/README.md`)
 - `tools/analysis/` - One-off analysis helpers (e.g., header detection, structure checks)
+- `tools/download/` - Scrapers and bulk PDF downloaders
+- `tools/import/` - Acts import, URL mapping, and chunking helpers
+- `tools/inspect/` - PDF inspection utilities
+- `tools/parse/` - Constitution parsing and extraction scripts
+- `tools/output/` - Generated reference outputs (samples, reports)
 - `server/ai-proxy/` - Cloudflare Worker that proxies AI requests (keeps API keys off-device)
 
 ## Repository Notes
 
 - AI requests go through a Cloudflare Worker. Set `EXPO_PUBLIC_AI_PROXY_URL` in `.env` or EAS.
-- `law_sources/` contains large PDFs and is not tracked; run `node tools/download-legal-pdfs.js` or use Git LFS if you want to publish the assets.
+- `law_sources/` contains large PDFs and is not tracked; run `node tools/download/download-legal-pdfs.js` or use Git LFS if you want to publish the assets.
 
 ## Content Import & Versioning
 

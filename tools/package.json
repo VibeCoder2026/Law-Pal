@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "description": "Tools for parsing and processing Guyana Constitution PDF",
   "scripts": {
-    "parse": "node parse-constitution.js",
-    "parse:v2": "node parse-constitution-v2.js",
-    "parse:v3": "node parse-constitution-v3.js",
-    "parse:v4": "node parse-constitution-v4.js",
-    "parse:v5": "node parse-constitution-v5.js",
-    "parse:v6": "node parse-constitution-v6.js",
-    "parse:final": "node parse-constitution-final.js",
-    "inspect": "node inspect-pdf.js"
+    "parse": "node parse/parse-constitution.js",
+    "parse:v2": "node parse/parse-constitution-v2.js",
+    "parse:v3": "node parse/parse-constitution-v3.js",
+    "parse:v4": "node parse/parse-constitution-v4.js",
+    "parse:v5": "node parse/parse-constitution-v5.js",
+    "parse:v6": "node parse/parse-constitution-v6.js",
+    "parse:final": "node parse/parse-constitution-final.js",
+    "inspect": "node inspect/inspect-pdf.js"
   },
   "dependencies": {
     "pdf-parse": "^1.1.1"

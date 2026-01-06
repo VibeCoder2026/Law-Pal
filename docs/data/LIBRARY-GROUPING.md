@@ -8,7 +8,7 @@ The Library screen now displays Constitution articles in a hierarchical, organiz
 
 ### 1. Data Structure
 
-The enhanced parser (`parse-constitution-v3.js`) creates two key data structures:
+The enhanced parser (`tools/parse/parse-constitution-v3.js`) creates two key data structures:
 
 **Sections** - Individual articles:
 ```typescript
@@ -59,7 +59,7 @@ Library Screen (Groups)
 
 #### New Files
 - [src/screens/ArticleListScreen.tsx](../../src/screens/ArticleListScreen.tsx) - Shows articles within a group
-- [tools/parse-constitution-v3.js](../../tools/parse-constitution-v3.js) - Enhanced parser with grouping
+- [tools/parse/parse-constitution-v3.js](../../tools/parse/parse-constitution-v3.js) - Enhanced parser with grouping
 
 #### Modified Files
 - [src/screens/LibraryScreen.tsx](../../src/screens/LibraryScreen.tsx) - Now shows groups instead of individual articles
@@ -130,7 +130,7 @@ npm run parse:v3
 
 ### Adjust Grouping Logic
 
-Edit `tools/parse-constitution-v3.js`:
+Edit `tools/parse/parse-constitution-v3.js`:
 
 ```javascript
 // Change how base articles are extracted

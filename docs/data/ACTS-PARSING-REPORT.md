@@ -25,8 +25,8 @@ The original Acts import (Version 1) extracted only section **headings**, not th
 
 ### Code Changes
 
-- **File**: `tools/import-acts.js` - Updated `parseSections()` function
-- **File**: `tools/test-import-acts.js` - Same parser improvements
+- **File**: `tools/import/import-acts.js` - Updated `parseSections()` function
+- **File**: `tools/import/test-import-acts.js` - Same parser improvements
 
 ---
 

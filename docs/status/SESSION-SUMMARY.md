@@ -29,7 +29,7 @@
 - Pin state refreshes on focus so pins appear immediately
 
 ### 4. Tooling and Config
-- `tools/build-constitution-page-index.py` added for page index regeneration
+- `tools/parse/build-constitution-page-index.py` added for page index regeneration
 - `tools/README.md` updated with page index instructions
 - VS Code empty editor hint disabled (local settings)
 
@@ -68,4 +68,25 @@
 - `src/screens/HomeScreen.tsx`
 - `src/assets/acts-pdf-urls.json`
 - `src/assets/constitution-page-index.json`
-- `tools/build-constitution-page-index.py`
+- `tools/parse/build-constitution-page-index.py`
+
+---
+
+**Date:** 2026-01-05
+**Focus:** Tooling and docs structure cleanup
+
+## Completed Work
+- Split `tools/` into `analysis/`, `download/`, `import/`, `inspect/`, `parse/`, and `output/`
+- Moved parsing, import, and scraping scripts into the new folders
+- Updated tool scripts to resolve paths from repo root for consistent execution
+- Updated `tools/README.md` and docs references to the new paths
+- Updated `tools/package.json` scripts to point at the new locations
+
+## Key Files Touched
+- `tools/README.md`
+- `tools/package.json`
+- `tools/analysis/analyze-pdf-structure.js`
+- `tools/download/download-legal-pdfs.js`
+- `tools/import/import-acts.js`
+- `tools/inspect/inspect-pdf.js`
+- `tools/parse/parse-constitution-v3.js`
