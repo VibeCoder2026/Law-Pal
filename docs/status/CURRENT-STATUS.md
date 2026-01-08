@@ -1,6 +1,6 @@
 # Law Pal GY - Current Status
 
-**Date:** 2026-01-03
+**Date:** 2026-01-06
 **Build Status:** Local dev build installed (expo run:android)
 
 ---
@@ -10,9 +10,9 @@
 - AI retrieval: AND-first/OR-fallback FTS, stopword filtering, Act title boost, balanced Acts + Constitution context.
 - Conversational guardrails: tone routing (domestic, criminal, rights) and no repeated greetings in responses.
 - PDF access: Acts download on demand with local caching; Constitution PDF deep-links to correct pages.
-- Home UI: "Options" label, vertical looping options when pins exist, pinned Acts horizontal looping, disclaimer pinned, pins refresh on focus.
-- Beta UX: Recent items on Home, Act resume page tracking, Acts list download status + downloaded-only filter.
-- Stability: AI rate limiting, PDF download retry/backoff, centralized limits in `APP_CONFIG`, local analytics queue for beta insights.
+- Home UI: Options grid tiles, disclaimer placed directly under the grid (no divider), pins refresh on focus.
+- Loading screen: congress/landmark icon added to match legal theme.
+- App icon: `app_icon.png` set in `app.config.js` (requires rebuild/reinstall).
 
 ## Core Features (Working)
 

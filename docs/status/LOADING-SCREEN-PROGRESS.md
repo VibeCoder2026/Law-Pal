@@ -18,7 +18,7 @@ Located at: `src/components/LoadingScreen.tsx`
 - **Dynamic Content:** Cycles through 6 different "Did you know?" facts about the Constitution of Guyana and the National Assembly.
 - **Animated Transitions:** Uses React Native's `Animated` API to fade facts in and out every 3.5 seconds.
 - **Themed Design:** Automatically respects Dark/Light mode using the `ThemeContext`.
-- **Visuals:** Features a scale icon (justice theme) with a smooth pulse-like feel.
+- **Visuals:** Features a landmark/congress icon (FontAwesome5) with a smooth pulse-like feel.
 
 **Technical Details:**
 - Uses `ActivityIndicator` for the spinning element.
@@ -41,7 +41,7 @@ Located at: `src/components/LoadingScreen.tsx`
 - [ ] **Asset Preloading:** Ensure icons and fonts are fully loaded before the loading screen even appears (using `expo-splash-screen`).
 
 ---
-*Last updated: December 31, 2025*
+*Last updated: January 6, 2026*
 
 
 

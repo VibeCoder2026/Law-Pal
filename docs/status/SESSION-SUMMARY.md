@@ -90,3 +90,19 @@
 - `tools/import/import-acts.js`
 - `tools/inspect/inspect-pdf.js`
 - `tools/parse/parse-constitution-v3.js`
+
+---
+
+**Date:** 2026-01-06
+**Focus:** Home screen polish and loading branding
+
+## Completed Work
+- Updated the Home screen disclaimer to sit directly below the Options grid
+- Removed the disclaimer divider line
+- Swapped the loading icon to a congress/landmark icon
+- Set the app icon to `app_icon.png` (requires rebuild to display on device)
+
+## Key Files Touched
+- `src/screens/HomeScreen.tsx`
+- `src/components/LoadingScreen.tsx`
+- `app.config.js`
