@@ -409,11 +409,11 @@ import AIAssistantScreen from '../screens/AIAssistantScreen';
 <Tab.Screen
   name="AI Assistant"
   component={AIAssistantScreen}
-  options={{
+  options={ {
     tabBarIcon: ({ color, size }) => (
       <Ionicons name="sparkles" size={size} color={color} />
     ),
-  }}
+  } }
 />
 ```
 {% endraw %}
