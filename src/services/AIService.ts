@@ -390,10 +390,11 @@ Output Format: Just the keywords separated by spaces. No explanation.
         const capInfo = section.chapter ? `(Cap. ${section.chapter})` : '';
         const docDisplayTitle = section.doc_type === 'act' ? `${section.doc_title} ${capInfo}` : section.doc_title;
         const title = section.heading ? `${section.section_number} - ${section.heading}` : section.section_number;
-        
-        // We include a hidden metadata tag for the AI to use in its response
+
+        // We include clear metadata for the AI to use in citations
+        // Format: [Source N] doc_id="xxx" chunk_id="yyy" - Title
         const label = section.doc_type === 'act' ? 'Section' : 'Article';
-        return `[Source ${index + 1}] (ID: ${section.doc_id}|${section.chunk_id}) ${docDisplayTitle} | ${label} ${title}:\n${section.text}`;
+        return `[Source ${index + 1}] doc_id="${section.doc_id}" chunk_id="${section.chunk_id}"\n${docDisplayTitle} | ${label} ${title}:\n${section.text}`;
       }).join('\n\n');
 
       const historyText = history.slice(-5).map(m =>
@@ -416,10 +417,28 @@ Your mission is to provide accurate, grounded, and helpful legal information to 
 
 **Strict Grounding Rules:**
 1. **Source Fidelity:** Base your answer ONLY on the provided Context. If the context doesn't contain the answer, explicitly state what you do know and where the gaps are.
-2. **Interactive Citations:** Every factual claim MUST include a citation using the EXACT doc_id and chunk_id from the context's metadata (ID: doc_id|chunk_id). Use this format: [Source X](lawpal://open?docId=EXACT_DOC_ID&chunkId=EXACT_CHUNK_ID).
-   - For Constitution sources with ID like "(ID: guyana-constitution|sec-40)": use [Source 1](lawpal://open?docId=guyana-constitution&chunkId=sec-40)
-   - For Act sources with ID like "(ID: criminal-law-offences-act|sec-123)": use [Source 2](lawpal://open?docId=criminal-law-offences-act&chunkId=sec-123)
-   - CRITICAL: Copy the doc_id EXACTLY as shown in the context metadata. Do NOT change "criminal-law-offences-act" to "constitution" or any other value.
+2. **Interactive Citations:** Every factual claim MUST include a citation. Each source in the context shows its IDs clearly:
+   [Source N] doc_id="xxx" chunk_id="yyy"
+
+   **Citation Format:** [Source X](lawpal://open?docId=DOC_ID&chunkId=CHUNK_ID)
+
+   **Examples:**
+   - If context shows: [Source 1] doc_id="guyana-constitution" chunk_id="sec-40"
+     → Use: [Source 1](lawpal://open?docId=guyana-constitution&chunkId=sec-40)
+
+   - If context shows: [Source 2] doc_id="act-008-02" chunk_id="act-008-02-s135"
+     → Use: [Source 2](lawpal://open?docId=act-008-02&chunkId=act-008-02-s135)
+
+   - If context shows: [Source 3] doc_id="act-099-08" chunk_id="act-099-08-s12"
+     → Use: [Source 3](lawpal://open?docId=act-099-08&chunkId=act-099-08-s12)
+
+   **CRITICAL - DO NOT MODIFY IDs:**
+   - Acts have doc_id starting with "act-" (e.g., act-008-02, act-099-08)
+   - Constitution has doc_id "guyana-constitution"
+   - Copy the doc_id and chunk_id EXACTLY as shown in quotes
+   - NEVER change an Act's doc_id to "guyana-constitution" or any other value
+   - Each source has UNIQUE IDs - always use the IDs shown for THAT specific source
+
 3. **Guyana Context:** Use Guyanese terminology. The Constitution is supreme (Article 8).
 4. **No Hallucinations:** Do not invent Acts, Sections, or legal principles not present in the Context.
 5. **Professional Disclaimer:** Always include a brief note that you are an AI and this is not professional legal advice.

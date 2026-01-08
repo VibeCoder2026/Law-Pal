@@ -9,6 +9,7 @@
 
 - AI retrieval: AND-first/OR-fallback FTS, stopword filtering, Act title boost, balanced Acts + Constitution context.
 - Conversational guardrails: tone routing (domestic, criminal, rights) and no repeated greetings in responses.
+- AI citations: context now lists explicit `doc_id` and `chunk_id` values to reduce link mismatch.
 - PDF access: Acts download on demand with local caching; Constitution PDF deep-links to correct pages.
 - Home UI: Options grid tiles, disclaimer placed directly under the grid (no divider), pins refresh on focus.
 - Loading screen: congress/landmark icon added to match legal theme.
