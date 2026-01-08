@@ -102,6 +102,7 @@
 - Swapped the loading icon to a congress/landmark icon
 - Set the app icon to `app_icon.png` (requires rebuild to display on device)
 - Updated Constitution UI labels to use “Article” and added a browse hint in the Library screen
+- Replaced Android launcher mipmaps with `app_icon.png` (requires clean rebuild to show on device)
 
 ## Key Files Touched
 - `src/screens/HomeScreen.tsx`
