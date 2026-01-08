@@ -167,10 +167,19 @@ const ChatScreen = ({ navigation }: any) => {
   };
 
   const handleCitationPress = useCallback(async (docId: string, chunkId: string) => {
+    if (__DEV__) {
+      console.log('[ChatScreen] Citation pressed - docId:', docId, 'chunkId:', chunkId);
+    }
     try {
       // Get document details to determine if it's Constitution or Act
       const document = await DatabaseService.getDocumentById(docId);
+      if (__DEV__) {
+        console.log('[ChatScreen] Document lookup result:', document);
+      }
       const isAct = document?.doc_type === 'act' || docId.startsWith('act-');
+      if (__DEV__) {
+        console.log('[ChatScreen] isAct:', isAct);
+      }
 
       if (!document) {
         if (!isAct) {
@@ -216,6 +225,9 @@ const ChatScreen = ({ navigation }: any) => {
 
   const handleLinkPress = useCallback(
     (href?: string | null) => {
+      if (__DEV__) {
+        console.log('[ChatScreen] Link pressed - href:', href);
+      }
       if (!href) return;
       if (href.startsWith('lawpal://open')) {
         const docIdMatch = href.match(/[?&]docId=([^&]+)/);
@@ -223,6 +235,10 @@ const ChatScreen = ({ navigation }: any) => {
 
         const docId = docIdMatch ? decodeURIComponent(docIdMatch[1]) : null;
         const chunkId = chunkIdMatch ? decodeURIComponent(chunkIdMatch[1]) : null;
+
+        if (__DEV__) {
+          console.log('[ChatScreen] Parsed link - docId:', docId, 'chunkId:', chunkId);
+        }
 
         if (docId && chunkId) {
           handleCitationPress(docId, chunkId);
