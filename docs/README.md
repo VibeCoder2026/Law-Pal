@@ -2,6 +2,10 @@
 
 This folder groups project docs and build logs so the repo root stays focused on code and config.
 
+## Project Docs
+- SETUP.md
+- CHANGELOG.md
+
 ## Build and Release (`docs/build/`)
 - build/BUILD-INSTRUCTIONS.md
 - build/QUICK-BUILD-GUIDE.md

@@ -4,7 +4,7 @@ module.exports = {
     slug: "guyana-laws",
     version: "1.0.1",
     orientation: "portrait",
-    icon: "./app_icon.png",
+    icon: "./assets/app_icon.png",
     userInterfaceStyle: "light",
     newArchEnabled: true,
     splash: {
@@ -17,7 +17,7 @@ module.exports = {
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./app_icon.png",
+        foregroundImage: "./assets/app_icon.png",
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,

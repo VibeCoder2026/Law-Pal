@@ -75,7 +75,7 @@ npx expo start
 - [Build Instructions](../build/BUILD-INSTRUCTIONS.md)
 ```
 
-#### 2. **SETUP.md** - Environment Setup
+#### 2. **docs/SETUP.md** - Environment Setup
 ```markdown
 # Development Setup
 
@@ -109,7 +109,7 @@ npx expo start
 User → ChatScreen → AIService → Gemini API → Response
 ```
 
-#### 4. **CHANGELOG.md** - What Changed When
+#### 4. **docs/CHANGELOG.md** - What Changed When
 ```markdown
 # Changelog
 
@@ -457,7 +457,7 @@ git push --tags
 **Docs Updated:**
 - [x] CURRENT-STATUS.md (added voice input to features)
 - [x] README.md (updated dependencies)
-- [x] CHANGELOG.md (logged change)
+- [x] docs/CHANGELOG.md (logged change)
 ```
 
 ### README Index
@@ -486,7 +486,7 @@ Keep README.md as central index:
 - [Troubleshooting](TROUBLESHOOTING.md)
 
 ### History
-- [Changelog](CHANGELOG.md)
+- [Changelog](../CHANGELOG.md)
 - [Setup Logs](logs/)
 ```
 
