@@ -19,3 +19,6 @@ android/app/src/main/assets/law_sources/
 # Also exclude the entire android build folder - EAS generates it fresh
 android/app/build/
 android/.gradle/
+
+# Force EAS to prebuild native projects from app.config.js
+android/

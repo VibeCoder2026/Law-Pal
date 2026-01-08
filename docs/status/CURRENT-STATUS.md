@@ -15,7 +15,9 @@
 - Loading screen: congress/landmark icon added to match legal theme.
 - App icon: `assets/app_icon.png` set in `app.config.js` (requires rebuild/reinstall).
 - Android icon: native mipmaps in `android/app/src/main/res/mipmap-*` now use `assets/app_icon.png` (requires rebuild to take effect).
-- Constitution UI: labels updated to “Article” for Constitution items, with a browse hint on the Library screen.
+- Constitution UI: labels updated to "Article" for Constitution items, with a browse hint on the Library screen.
+- Acts PDF URLs: coverage verified (459/459).
+- EAS builds: `android/` excluded in `.easignore`, `newArchEnabled` disabled for release stability.
 
 ## Core Features (Working)
 
@@ -26,9 +28,9 @@
 
 ## In Progress
 
-- Validate coverage of all Acts in `src/assets/acts-pdf-urls.json`.
 - Icon refresh (requires rebuild/reinstall to show on device).
 - Optional packs or grouped downloads for Acts.
+- Re-run EAS production build to confirm APK export after prebuild + newArch changes.
 
 ## App Size Notes
 

@@ -18,6 +18,10 @@ Enter your Expo username and password.
 npx eas build --platform android --profile production
 ```
 
+Notes:
+- EAS builds use `app.config.js` (the local `android/` folder is excluded via `.easignore`).
+- `newArchEnabled` is set to `false` for release stability. Only enable it after verifying all native modules build cleanly.
+
 This will:
 1. Upload your code to Expo's build servers
 2. Compile the APK with react-native-pdf included
