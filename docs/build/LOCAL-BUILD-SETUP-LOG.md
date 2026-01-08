@@ -2,6 +2,7 @@
 
 **Date:** January 1, 2026
 **Purpose:** Enable instant hot-reload development (2-3 sec testing vs 15 min EAS builds)
+**Note:** This log predates on-demand PDF downloads. Any steps referencing `law_sources/` or PDF bundling are legacy.
 
 ---
 

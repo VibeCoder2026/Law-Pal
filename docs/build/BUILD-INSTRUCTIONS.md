@@ -42,7 +42,7 @@ npx expo start --dev-client
 
 Once you've built the development client once, you only need to rebuild when:
 - Adding new native modules
-- Changing app.json native config
+- Changing app.config.js native config
 - Updating native dependencies
 
 For regular JS/TS changes:

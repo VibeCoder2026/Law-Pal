@@ -51,7 +51,7 @@ Click the link to download the APK.
 
 1. Open the app
 2. Navigate: Acts & Statutes → Select tier → Select Act
-3. PDF should load and display with:
+3. On first open, the PDF should download and then display with:
    - Page navigation (swipe)
    - Pinch to zoom
    - Page counter
@@ -74,15 +74,15 @@ eas credentials
 
 ### PDF not loading
 - Check logs: `adb logcat | grep ActPdfViewer`
-- Verify PDF files are in `law_sources/` folder
-- Ensure `app.json` has `law_sources/**` in assetBundlePatterns
+- Confirm the Act exists in `src/assets/acts-pdf-urls.json`
+- Ensure the device has network access on first download
+- Verify `EXPO_PUBLIC_AI_PROXY_URL` is set for AI chat
 
 ## File Size
 
-Expected APK size: **~250-350 MB**
-- App code: ~50 MB
-- PDFs (459 Acts): ~200 MB
-- Libraries: ~50 MB
+Expected APK size: **~60-120 MB** (PDFs are not bundled)
+- App code + native libs only
+- PDFs download on demand and are cached per device
 
 ## Alternative: Development Build
 
@@ -110,7 +110,7 @@ Once you verify PDFs work:
 
 When ready to publish:
 
-1. Change package name in app.json to your domain:
+1. Change package name in app.config.js to your domain:
    ```json
    "package": "gy.gov.laws" // Example
    ```

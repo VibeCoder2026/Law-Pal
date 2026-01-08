@@ -84,15 +84,13 @@ npx expo run:android
 
 # This will:
 # 1. Generate android/ folder with native code
-# 2. Copy PDFs to android/assets via Gradle plugin
-# 3. Compile the APK
-# 4. Install on connected device/emulator
+# 2. Compile the APK
+# 3. Install on connected device/emulator
 ```
 
 **What happens:**
 - ✅ Downloads Gradle dependencies (~2GB)
 - ✅ Compiles React Native (~10-15 min)
-- ✅ Copies 761MB of PDFs to android/assets
 - ✅ Builds APK (~5-10 min)
 - ✅ Installs on device automatically
 
@@ -135,8 +133,7 @@ npx expo start --dev-client
 
 **Rebuild Required (npx expo run:android):**
 - Adding new native npm packages (e.g., @react-native-voice/voice)
-- Changing expo plugins in app.json
-- Adding new PDFs to law_sources/
+- Changing expo plugins in app.config.js
 - Updating Expo SDK version
 
 **No Rebuild Needed (just hot reload):**
@@ -246,14 +243,13 @@ Add to `android/gradle.properties`:
 org.gradle.jvmargs=-Xmx4096m
 ```
 
-### "PDFs not found in dev build"
+### "PDFs not loading"
 ```bash
-# The Gradle plugin should copy them automatically
-# Verify in android/app/src/main/assets/law_sources/
+# PDFs are downloaded on demand now.
+# Check the URL map:
+rg -n "your-act.pdf" src/assets/acts-pdf-urls.json
 
-# If missing, rebuild:
-npx expo prebuild --clean
-npx expo run:android
+# Ensure device has network access on first open.
 ```
 
 ---
@@ -331,7 +327,6 @@ npx eas build --profile production --platform android
 **First Local Build:**
 - Gradle dependencies download: ~10 min
 - React Native compilation: ~15 min
-- PDF copying: ~5 min
 - APK assembly: ~5 min
 - **Total: ~35-45 minutes** (one time!)
 
