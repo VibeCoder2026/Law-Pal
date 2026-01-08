@@ -101,6 +101,7 @@
 - Removed the disclaimer divider line
 - Swapped the loading icon to a congress/landmark icon
 - Set the app icon to `app_icon.png` (requires rebuild to display on device)
+- Updated Constitution UI labels to use “Article” and added a browse hint in the Library screen
 
 ## Key Files Touched
 - `src/screens/HomeScreen.tsx`

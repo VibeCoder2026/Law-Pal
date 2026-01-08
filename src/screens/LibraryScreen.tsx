@@ -131,6 +131,9 @@ export default function LibraryScreen() {
           </TouchableOpacity>
         )}
       </View>
+      <Text style={[styles.browseHint, { color: colors.textSecondary }]}>
+        Browse by article number or pick a Part below.
+      </Text>
 
       <FlatList
         data={parts}
@@ -184,6 +187,11 @@ const styles = StyleSheet.create({
   },
   jumpButton: {
     marginLeft: 8,
+  },
+  browseHint: {
+    marginHorizontal: 20,
+    marginBottom: 12,
+    fontSize: 12,
   },
   listContent: {
     padding: 20,

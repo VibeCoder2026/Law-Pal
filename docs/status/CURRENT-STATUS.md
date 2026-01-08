@@ -13,6 +13,7 @@
 - Home UI: Options grid tiles, disclaimer placed directly under the grid (no divider), pins refresh on focus.
 - Loading screen: congress/landmark icon added to match legal theme.
 - App icon: `app_icon.png` set in `app.config.js` (requires rebuild/reinstall).
+- Constitution UI: labels updated to “Article” for Constitution items, with a browse hint on the Library screen.
 
 ## Core Features (Working)
 

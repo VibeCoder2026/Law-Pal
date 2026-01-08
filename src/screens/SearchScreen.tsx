@@ -58,6 +58,7 @@ export default function SearchScreen() {
   const renderResult = ({ item }: { item: SearchResult }) => {
     const contentPreview = item.text.substring(0, 150) + '...';
     const isAct = item.doc_type === 'act';
+    const label = isAct ? 'Section' : 'Article';
 
     return (
       <TouchableOpacity
@@ -70,7 +71,7 @@ export default function SearchScreen() {
           <Ionicons name={isAct ? "hammer" : "document-text"} size={18} color={colors.primary} />
           <View style={styles.titleContainer}>
             <Text style={[styles.resultTitle, { color: colors.text }]} numberOfLines={1}>
-              {item.heading || `Section ${item.section_number}`}
+              {item.heading || `${label} ${item.section_number}`}
             </Text>
             <Text style={[styles.resultDocTitle, { color: colors.primary }]} numberOfLines={1}>
               {item.doc_title}

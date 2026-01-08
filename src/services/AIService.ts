@@ -124,7 +124,8 @@ class AIService {
         : section.doc_title;
       const title = section.heading ? `${section.section_number} - ${section.heading}` : section.section_number;
       const link = `[Source ${index + 1}](lawpal://open?docId=${section.doc_id}&chunkId=${section.chunk_id})`;
-      return `- ${docTitle} | Section ${title} ${link}`;
+      const label = section.doc_type === 'act' ? 'Section' : 'Article';
+      return `- ${docTitle} | ${label} ${title} ${link}`;
     });
 
     return [
@@ -391,7 +392,8 @@ Output Format: Just the keywords separated by spaces. No explanation.
         const title = section.heading ? `${section.section_number} - ${section.heading}` : section.section_number;
         
         // We include a hidden metadata tag for the AI to use in its response
-        return `[Source ${index + 1}] (ID: ${section.doc_id}|${section.chunk_id}) ${docDisplayTitle} | Section ${title}:\n${section.text}`;
+        const label = section.doc_type === 'act' ? 'Section' : 'Article';
+        return `[Source ${index + 1}] (ID: ${section.doc_id}|${section.chunk_id}) ${docDisplayTitle} | ${label} ${title}:\n${section.text}`;
       }).join('\n\n');
 
       const historyText = history.slice(-5).map(m =>

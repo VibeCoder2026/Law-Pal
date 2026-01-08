@@ -35,7 +35,7 @@ export default function BookmarksScreen() {
         id: section.chunk_id,
         doc_id: 'guyana-constitution',
         chunk_id: section.chunk_id,
-        title: section.heading || `Section ${section.section_number}`,
+        title: section.heading || `Article ${section.section_number}`,
         createdAt: Date.now(), // We don't have actual timestamp, use current time
         note: undefined,
       }));
@@ -108,7 +108,7 @@ export default function BookmarksScreen() {
             No bookmarks yet
           </Text>
           <Text style={[styles.emptySubtext, { color: colors.textSecondary }]}>
-            Bookmark sections to read them later
+            Bookmark articles to read them later
           </Text>
         </View>
       ) : (

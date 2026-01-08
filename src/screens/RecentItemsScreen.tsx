@@ -114,7 +114,7 @@ export default function RecentItemsScreen() {
           <Ionicons name="time" size={44} color={colors.textSecondary} />
           <Text style={[styles.emptyTitle, { color: colors.text }]}>Nothing yet</Text>
           <Text style={[styles.emptySubtitle, { color: colors.textSecondary }]}>
-            Open an Act or Constitution section and it will appear here.
+            Open an Act or Constitution article and it will appear here.
           </Text>
         </View>
       ) : (
