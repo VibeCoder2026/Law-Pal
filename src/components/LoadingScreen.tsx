@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator, StatusBar, Animated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 
 const LEGAL_FACTS = [
@@ -55,7 +55,7 @@ export default function LoadingScreen() {
       
       <View style={styles.content}>
         <Animated.View style={[styles.iconContainer, { backgroundColor: colors.primary + '20' }]}>
-          <Ionicons name="scale-outline" size={70} color={colors.primary} />
+          <FontAwesome5 name="landmark" size={64} color={colors.primary} />
         </Animated.View>
         
         <Text style={[styles.title, { color: colors.text }]}>Law Pal 🇬🇾</Text>

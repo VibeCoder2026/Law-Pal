@@ -28,6 +28,8 @@ class DatabaseService {
     try {
       console.log('[DB] Initializing database...');
       this.db = await SQLite.openDatabaseAsync('constitution.db');
+      await this.db.execAsync('PRAGMA journal_mode = WAL;');
+      await this.db.execAsync('PRAGMA busy_timeout = 5000;');
 
       // Step 0: Force reset if flag is enabled (DEVELOPMENT ONLY)
       if (FORCE_DB_RESET) {

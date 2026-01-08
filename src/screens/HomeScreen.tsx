@@ -133,11 +133,7 @@ export default function HomeScreen() {
         backgroundColor={colors.background}
       />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+      <View style={styles.mainContent}>
         <View style={styles.header}>
           <View>
             <Text style={[styles.title, { color: colors.text }]}>
@@ -220,32 +216,32 @@ export default function HomeScreen() {
             Options
           </Text>
 
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.key}
-              style={[styles.categoryCard, { backgroundColor: colors.surface }]}
-              onPress={option.onPress}
-              activeOpacity={0.7}
-            >
-              <View style={styles.categoryHeader}>
-                <Ionicons name={option.icon} size={28} color={colors.primary} />
-                <Text style={[styles.categoryTitle, { color: colors.text }]}>
+          <View style={styles.optionsGrid}>
+            {options.map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                style={[styles.optionTile, { backgroundColor: colors.surface }]}
+                onPress={option.onPress}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.optionIcon, { backgroundColor: colors.primary + '15' }]}>
+                  <Ionicons name={option.icon} size={26} color={colors.primary} />
+                </View>
+                <Text style={[styles.optionTitle, { color: colors.text }]} numberOfLines={2}>
                   {option.title}
                 </Text>
-              </View>
-              <Text style={[styles.categoryDescription, { color: colors.textSecondary }]}>
-                {option.description}
-              </Text>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
-        <View style={[styles.disclaimerSection, { borderTopColor: colors.border }]}>
+        <View style={styles.disclaimerSection}>
           <Text style={[styles.disclaimerText, { color: colors.textSecondary }]}>
             <Text style={{ fontWeight: 'bold' }}>Disclaimer:</Text> This app is for informational purposes only and does not constitute official legal advice. Law Pal 🇬🇾 is not affiliated with the Government of Guyana. Always verify with official gazetted documents and consult a legal professional for serious matters.
           </Text>
         </View>
-      </ScrollView>
+      </View>
+
     </View>
   );
 }
@@ -254,11 +250,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  scrollView: {
+  mainContent: {
     flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 30,
   },
   header: {
     flexDirection: 'row',
@@ -334,36 +327,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 16,
   },
-  categoryCard: {
-    padding: 16,
-    borderRadius: 12,
+  optionsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+  },
+  optionTile: {
+    width: '48%',
+    aspectRatio: 1,
+    borderRadius: 14,
+    padding: 12,
     marginBottom: 12,
-    marginHorizontal: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     elevation: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
   },
-  categoryHeader: {
-    flexDirection: 'row',
+  optionIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
-  categoryTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginLeft: 12,
-  },
-  categoryDescription: {
+  optionTitle: {
     fontSize: 14,
-    lineHeight: 20,
+    fontWeight: '600',
+    textAlign: 'center',
+    lineHeight: 18,
   },
   disclaimerSection: {
-    marginHorizontal: 20,
-    paddingTop: 20,
-    marginTop: 10,
-    borderTopWidth: 1,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 0,
   },
   disclaimerText: {
     fontSize: 11,
