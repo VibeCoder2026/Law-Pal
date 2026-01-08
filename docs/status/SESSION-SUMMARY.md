@@ -122,3 +122,15 @@
 ## Key Files Touched
 - `eas.json`
 - `docs/build/PRODUCTION-BUILD-STEPS.md`
+
+---
+
+**Date:** 2026-01-08
+**Focus:** Production APK build + AI proxy env
+
+## Completed Work
+- Production APK build completed
+- Identified missing `EXPO_PUBLIC_AI_PROXY_URL` in EAS production env (AI chat disabled in APK)
+
+## Follow-ups
+- Add `EXPO_PUBLIC_AI_PROXY_URL` to EAS production env and rebuild

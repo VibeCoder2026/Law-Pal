@@ -22,6 +22,7 @@ Notes:
 - EAS builds use `app.config.js` (the local `android/` folder is excluded via `.easignore`).
 - `newArchEnabled` is set to `false` for release stability. Only enable it after verifying all native modules build cleanly.
 - Avoid setting `NODE_ENV=production` in `eas.json`; it can skip dev deps and break EAS installs.
+- Ensure `EXPO_PUBLIC_AI_PROXY_URL` is set in the EAS **production** environment before building.
 
 This will:
 1. Upload your code to Expo's build servers

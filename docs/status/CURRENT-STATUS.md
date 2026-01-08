@@ -19,6 +19,7 @@
 - Acts PDF URLs: coverage verified (459/459).
 - EAS builds: `android/` excluded in `.easignore`, `newArchEnabled` disabled for release stability.
 - EAS builds: removed `NODE_ENV=production` from profile to avoid skipping dev deps during install.
+- Production APK built, but AI chat requires `EXPO_PUBLIC_AI_PROXY_URL` to be set in EAS production env and a rebuild.
 
 ## Core Features (Working)
 
@@ -43,6 +44,7 @@
 1. Spot-check Act-only queries and confirm citations.
 2. Test PDF downloads across multiple tiers and verify caching.
 3. Finish doc updates that still describe bundled PDFs.
+4. Set `EXPO_PUBLIC_AI_PROXY_URL` in EAS production env and rebuild the APK for AI chat.
 
 ## Coming Soon
 
