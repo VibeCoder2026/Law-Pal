@@ -18,6 +18,7 @@
 - Constitution UI: labels updated to "Article" for Constitution items, with a browse hint on the Library screen.
 - Acts PDF URLs: coverage verified (459/459).
 - EAS builds: `android/` excluded in `.easignore`, `newArchEnabled` disabled for release stability.
+- EAS builds: removed `NODE_ENV=production` from profile to avoid skipping dev deps during install.
 
 ## Core Features (Working)
 

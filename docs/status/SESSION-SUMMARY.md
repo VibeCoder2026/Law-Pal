@@ -109,3 +109,16 @@
 - `src/screens/HomeScreen.tsx`
 - `src/components/LoadingScreen.tsx`
 - `app.config.js`
+
+---
+
+**Date:** 2026-01-08
+**Focus:** EAS production build stability
+
+## Completed Work
+- Removed `NODE_ENV=production` from `eas.json` production profile to keep dev deps available during EAS installs
+- Updated production build docs to warn against `NODE_ENV` in EAS profiles
+
+## Key Files Touched
+- `eas.json`
+- `docs/build/PRODUCTION-BUILD-STEPS.md`

@@ -1,17 +1,29 @@
+diff --git a/node_modules/react-native-blob-util/android/build.gradle b/node_modules/react-native-blob-util/android/build.gradle
+index 3d74e27..18c76a8 100644
+--- a/node_modules/react-native-blob-util/android/build.gradle
++++ b/node_modules/react-native-blob-util/android/build.gradle
+@@ -30,7 +30,7 @@ buildscript {
+             mavenCentral()
+         }
+         dependencies {
+-            classpath 'com.android.tools.build:gradle:7.2.1'
++            classpath 'com.android.tools.build:gradle:8.11.0'
+         }
+     }
+ }
 diff --git a/node_modules/react-native-blob-util/fs.js b/node_modules/react-native-blob-util/fs.js
-index 7b80f74..b44b1b8 100644
+index 3e9821e..ad74214 100644
 --- a/node_modules/react-native-blob-util/fs.js
 +++ b/node_modules/react-native-blob-util/fs.js
-@@ -112,7 +112,13 @@ function unlink(path: string): Promise {
+@@ -366,6 +366,11 @@ function unlink(path: string): Promise {
+         }
          ReactNativeBlobUtil.unlink(path, (err) => {
              if (err) {
--                reject(addCode('EUNSPECIFIED', new Error(err)));
 +                const message = typeof err === 'string' ? err : String(err);
 +                if (/no such file|does not exist|failed to delete|ENOENT/i.test(message)) {
 +                    resolve();
 +                    return;
 +                }
-+                reject(addCode('EUNSPECIFIED', new Error(err)));
+                 reject(addCode('EUNSPECIFIED', new Error(err)));
              }
              else
-                 resolve();
